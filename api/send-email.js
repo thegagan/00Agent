@@ -7,8 +7,8 @@ import { Resend } from 'resend';
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 // IMPORTANT: Configure these in Vercel Environment Variables
-const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || '00Agent Leads <leads@yourdomain.com>'; // Replace with your verified sender
-const TO_EMAIL = process.env.RESEND_TO_EMAIL || 'your-receiving-email@example.com'; // Replace with where you want to receive leads
+const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || '00Agent Leads <leads@00agent.io>'; // Replace with your verified sender
+const TO_EMAIL = process.env.RESEND_TO_EMAIL || 'gagan@00agent.io'; // Replace with where you want to receive leads
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
