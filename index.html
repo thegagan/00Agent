@@ -1,0 +1,1644 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>00Agent.io - Autonomous KPI Optimization</title>
+    
+    <!-- Tailwind CSS --><script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts --><link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Playfair+Display:wght@700&family=Roboto+Mono&display=swap" rel="stylesheet">
+    
+    <!-- Syntax Highlighting (for modal) --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <style>
+        /* Base styles */
+        :root {
+            /* --- Button Colors --- */
+            --bg-color: #030712; /* gray-950 */
+            --text-color: #ffffff; /* white */
+            --primary-color: #22d3ee; /* cyan-400 */
+            --secondary-color: #f472b6; /* pink-400 (for glitch) */
+            --disabled-color: #a5f3fc; /* cyan-200 */
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: #d1d5db; /* gray-300 */
+            overflow-x: hidden;
+        }
+
+        /* --- Logo Font --- */
+        .logo-font {
+             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; /* ui-monospace */
+             font-weight: 900; /* font-black */
+        }
+
+        /* Hero background glow - Reduced intensity slightly */
+        .hero-glow {
+            background-image: radial-gradient(ellipse at 50% 20%, rgba(0, 224, 255, 0.1), transparent 70%);
+        }
+
+        /* --- Canvas Background Styles --- */
+        #heroCanvas, #advantageCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1; /* Place behind content */
+            pointer-events: none; /* Make it non-interactive */
+        }
+        
+        /* Ensure sections with canvases are positioned relatively */
+        #home, #advantage {
+            position: relative;
+            overflow: hidden; /* Prevent canvas overflow */
+        }
+        
+        /* --- End Canvas Styles --- */
+
+        /* --- Holographic Glitch Button Style --- */
+        @keyframes glitch-effect {
+            0% { 
+                text-shadow: 2px 2px var(--secondary-color), -2px -2px var(--primary-color);
+                box-shadow: 0 0 5px var(--secondary-color), inset 0 0 5px var(--secondary-color);
+                border-color: var(--secondary-color);
+            }
+            20% { 
+                text-shadow: -2px -2px var(--secondary-color), 2px 2px var(--primary-color);
+                box-shadow: 0 0 5px var(--primary-color), inset 0 0 5px var(--primary-color);
+                border-color: var(--primary-color);
+            }
+            40% { 
+                text-shadow: 2px -2px var(--secondary-color), -2px 2px var(--primary-color);
+                box-shadow: 0 0 5px var(--secondary-color), inset 0 0 5px var(--secondary-color);
+                border-color: var(--secondary-color);
+            }
+            60% { 
+                text-shadow: -2px 2px var(--secondary-color), 2px -2px var(--primary-color);
+                box-shadow: 0 0 5px var(--primary-color), inset 0 0 5px var(--primary-color);
+                border-color: var(--primary-color);
+            }
+            80% { 
+                text-shadow: 2px 2px var(--secondary-color), -2px -2px var(--primary-color);
+                box-shadow: 0 0 5px var(--secondary-color), inset 0 0 5px var(--secondary-color);
+                border-color: var(--secondary-color);
+            }
+            100% { 
+                text-shadow: none; 
+                box-shadow: none;
+                border-color: var(--secondary-color); /* Retain pink border after animation */
+            }
+        }
+
+        .holographic-glitch-btn {
+            position: relative;
+            padding: 0.75rem 1.5rem; /* 1rem 2.5rem is too big */
+            color: var(--primary-color);
+            text-decoration: none;
+            font-size: 1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: 2px solid var(--primary-color);
+            border-radius: 0.5rem; /* 8px */
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--bg-color);
+            /* Ensure text-align for <a> tags */
+            text-align: center;
+        }
+        
+        .holographic-glitch-btn span {
+            /* This span holds the text */
+            display: inline-block; /* Allows text to be centered */
+            transition: all 0.3s ease;
+        }
+        
+        .holographic-glitch-btn:hover {
+             animation: glitch-effect 0.5s linear;
+             border-color: var(--secondary-color); /* Keep border pink on hover */
+        }
+        
+        .holographic-glitch-btn:hover span {
+            color: var(--secondary-color);
+        }
+        
+        .holographic-glitch-btn:disabled {
+            border-color: var(--disabled-color);
+            color: var(--disabled-color);
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        
+        .holographic-glitch-btn:disabled:hover {
+            animation: none;
+            border-color: var(--disabled-color);
+        }
+        
+        .holographic-glitch-btn:disabled:hover span {
+            animation: none;
+            color: var(--disabled-color);
+        }
+        
+        /* --- End Holographic Glitch Button --- */
+        
+        /* Legacy button style (still used for contact form) */
+        .gemini-button {
+            background-color: #22d3ee; /* cyan-400 */
+            color: #030712; /* gray-950 */
+            font-weight: 700;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(34, 211, 238, 0.4), 0 0 5px rgba(34, 211, 238, 0.6);
+            cursor: pointer;
+            border: none; /* Reset border */
+        }
+        .gemini-button:hover {
+            background-color: #67e8f9; /* cyan-300 */
+            box-shadow: 0 0 25px rgba(34, 211, 238, 0.6), 0 0 10px rgba(34, 211, 238, 0.8);
+            transform: translateY(-2px);
+        }
+        .gemini-button:disabled {
+            background-color: #a5f3fc; /* cyan-200 */
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        /* Dark mode form inputs */
+        .form-input {
+            background-color: #1f2937; /* gray-800 */
+            border-color: #4b5563; /* gray-600 */
+            color: #f9fafb; /* gray-50 */
+        }
+        .form-input:focus {
+            border-color: #22d3ee; /* cyan-400 */
+            box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.3);
+            outline: none;
+        }
+        /* Dark mode select arrow */
+        select.form-input {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        /* Secondary button/link */
+        .link-secondary {
+            color: #22d3ee; /* cyan-400 */
+            transition: all 0.3s ease;
+        }
+        .link-secondary:hover {
+            color: #f8fafc; /* slate-50 */
+            text-decoration: underline;
+        }
+
+        /* Feature card style */
+        .feature-card {
+            background-color: rgba(17, 24, 39, 0.7); /* gray-900/70 */
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(55, 65, 81, 0.5); /* gray-700/50 */
+            transition: all 0.3s ease;
+        }
+        .feature-card:hover {
+            border-color: rgba(34, 211, 238, 0.7); /* cyan-400/70 */
+            box-shadow: 0 0 20px rgba(34, 211, 238, 0.3), 0 0 8px rgba(34, 211, 238, 0.5);
+            transform: translateY(-4px);
+        }
+
+        /* Custom font for agent names/steps */
+        .font-agent-name {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+        
+        /* --- Testimonial Card Base Styles --- */
+        .testimonial-card {
+            background-color: #111827; /* gray-900 */
+            border: 1px solid #374151; /* gray-700 */
+            color: #d1d5db; /* gray-300 */
+            transition: all 0.3s ease-in-out; /* Smooth transition for theme changes */
+        }
+        .testimonial-text {
+            color: #d1d5db; /* gray-300 */
+            font-family: 'Inter', sans-serif;
+        }
+        .quote-mark {
+            color: #22d3ee; /* cyan-400 */
+            opacity: 0.2;
+            font-family: 'Playfair Display', serif; /* Use serif for quotes */
+        }
+        .author-name {
+            color: #ffffff; /* white */
+        }
+        .author-title {
+            color: #9ca3af; /* gray-400 */
+        }
+        
+        /* --- Testimonial Theme: Modern --- */
+        .testimonial-theme-modern .testimonial-card {
+            background-color: #0f172a; /* slate-900 */
+            border-left: 4px solid #22d3ee; /* cyan-400 accent */
+            border-top: none;
+            border-right: none;
+            border-bottom: none;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .testimonial-theme-modern .quote-mark {
+            display: none; /* Hide default quote mark */
+        }
+        .testimonial-theme-modern .testimonial-text::before {
+            content: '“'; /* Add quote mark using pseudo-element */
+            font-family: 'Playfair Display', serif;
+            font-size: 3rem;
+            color: #22d3ee;
+            opacity: 0.5;
+            position: absolute;
+            top: -1.5rem;
+            left: -1rem;
+        }
+         .testimonial-theme-modern .testimonial-text {
+             padding-left: 1rem;
+             margin-top: 1rem;
+         }
+        .testimonial-theme-modern .author-avatar {
+            border: 2px solid #22d3ee;
+        }
+
+        /* --- Testimonial Theme: Minimal --- */
+        .testimonial-theme-minimal .testimonial-card {
+            background-color: transparent; /* No background */
+            border: none;
+            border-bottom: 1px solid #374151; /* gray-700 */
+            border-radius: 0; /* No rounded corners */
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+        .testimonial-theme-minimal .quote-mark {
+            font-size: 4rem;
+            top: -1rem;
+            left: -1rem;
+            opacity: 0.1;
+        }
+        .testimonial-theme-minimal .author-avatar {
+            width: 2.5rem; /* w-10 */
+            height: 2.5rem; /* h-10 */
+        }
+        .testimonial-theme-minimal .author-name {
+            font-size: 0.875rem; /* text-sm */
+        }
+        .testimonial-theme-minimal .author-title {
+            font-size: 0.75rem; /* text-xs */
+        }
+
+        /* --- Testimonial Theme: Playful --- */
+        .testimonial-theme-playful .testimonial-card {
+            background-color: #1e293b; /* slate-800 */
+            border: 1px dashed #67e8f9; /* cyan-300 dashed border */
+            transform: rotate(-1deg); /* Slight tilt */
+        }
+        .testimonial-theme-playful .testimonial-card:nth-child(even) {
+            transform: rotate(1deg); /* Alternate tilt */
+        }
+        .testimonial-theme-playful .quote-mark {
+            color: var(--secondary-color); /* pink-400 */
+            opacity: 0.3;
+        }
+        .testimonial-theme-playful .testimonial-text {
+            font-family: 'Roboto Mono', monospace; /* Monospace font */
+        }
+        .testimonial-theme-playful .author-name {
+            color: #67e8f9; /* cyan-300 */
+        }
+        
+        /* Loader for Analyzer */
+        .loader {
+            border: 4px solid #374151; /* gray-700 */
+            border-top: 4px solid #22d3ee; /* cyan-400 */
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Pulsing heart for testimonials */
+        @keyframes pulse-heart {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+        }
+        .pulsing-heart {
+            animation: pulse-heart 1.5s ease-in-out infinite;
+        }
+
+        /* --- New Analyzer Result Styles --- */
+        .recommendation-item {
+            color: #d1d5db; /* gray-300 */
+        }
+        .recommendation-item h3 {
+            font-size: 1.25rem; /* text-xl */
+            font-weight: 700; /* font-bold */
+            color: #ffffff; /* white */
+        }
+        .recommendation-item h3 span {
+            color: var(--text-color); /* Updated to white */
+        }
+        .recommendation-item p {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: #9ca3af; /* gray-400 */
+        }
+        .review-code-btn, .strategy-btn {
+            background-color: #374151; /* gray-700 */
+            color: #d1d5db; /* gray-300 */
+            font-weight: 600; /* font-semibold */
+            padding: 0.5rem 0.75rem; /* py-2 px-3 */
+            border-radius: 0.5rem; /* rounded-lg */
+            font-size: 0.875rem; /* text-sm */
+            transition: background-color 0.2s ease;
+            cursor: pointer;
+        }
+        .review-code-btn:hover, .strategy-btn:hover {
+            background-color: #4b5563; /* gray-600 */
+        }
+        .learn-more-btn {
+            background-color: #22d3ee; /* cyan-400 */
+            color: #030712; /* gray-950 */
+            font-weight: 600; /* font-semibold */
+            padding: 0.5rem 1rem; /* px-4 py-2 */
+            border-radius: 0.5rem; /* rounded-lg */
+            font-size: 0.875rem; /* text-sm */
+            transition: all 0.3s ease;
+        }
+        .learn-more-btn:hover {
+            background-color: #67e8f9; /* cyan-300 */
+            transform: translateY(-1px);
+        }
+        
+        /* Hidden container for code snippet */
+        .code-snippet {
+            display: none; 
+        }
+        
+        .strategy-details {
+            display: none; 
+        }
+        
+        /* --- Modal Styles --- */
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+        }
+        .modal-content {
+            background-color: #111827; /* gray-900 */
+            border: 1px solid #374151; /* gray-700 */
+        }
+        .modal-body {
+            /* Styles for strategy modal content */
+            color: #d1d5db; /* gray-300 */
+        }
+        .modal-body h4 {
+            font-weight: 700;
+            color: #ffffff; /* white */
+            margin-top: 0.5rem;
+            margin-bottom: 0.25rem;
+        }
+        .modal-body p {
+            color: #9ca3af; /* gray-400 */
+            margin-bottom: 1rem;
+        }
+        
+        /* Strategy modal cards */
+        .strategy-metric-card {
+            display: flex;
+            align-items: center;
+            background-color: #030712; /* gray-950 */
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            border: 1px solid #374151; /* gray-700 */
+            margin-bottom: 0.75rem;
+        }
+        .strategy-metric-card svg {
+            margin-right: 0.75rem; /* mr-3 */
+            height: 1.5rem; /* h-6 */
+            width: 1.5rem; /* w-6 */
+            color: var(--primary-color); /* Updated to cyan/blue */
+            flex-shrink: 0; /* Prevent icons from shrinking */
+        }
+        .strategy-metric-card .font-bold {
+            font-weight: 700;
+            color: #d1d5db; /* gray-300 */
+        }
+        .strategy-metric-card .text-sm {
+            font-size: 0.875rem;
+            color: #9ca3af; /* gray-400 */
+        }
+        
+        /* Strategy Modal Footer Text */
+        .strategy-modal-footer-text {
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid #374151; /* gray-700 */
+            font-size: 0.875rem;
+            color: #9ca3af; /* gray-400 */
+            text-align: center;
+        }
+        
+        /* Linter/Code Formatting Fix */
+        /* This <pre> tag wraps the <code> tag */
+        .code-modal-pre {
+            border-radius: 0.5rem;
+            border: 1px solid #374151;
+            overflow: hidden; /* for border-radius */
+            /* Let the <code> tag inside set the background */
+        }
+        
+        #modalCodeContent {
+            /* This is the <code> tag */
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.875rem;
+            white-space: pre-wrap; 
+            word-wrap: break-word;
+            padding: 1rem; /* Add padding here */
+            /* Let the highlight.js theme (atom-one-dark) set bg and colors */
+        }
+        /* Remove conflicting styles */
+        #modalCodeContent.hljs {
+            background: none; /* REMOVED explicit background */
+            color: inherit; /* Let theme handle color */
+        }
+        
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Header --><header class="fixed top-0 left-0 right-0 z-50 bg-gray-950/80 backdrop-blur-lg border-b border-gray-700/50">
+        <nav class="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                
+                <!-- Logo --><a href="#home" class="flex-shrink-0 flex items-center scroll-link">
+                    <!-- Updated Logo Font --><span class="text-2xl text-white logo-font">
+                        <span class="text-cyan-400">00</span>AGENT
+                    </span>
+                </a>
+                
+                <!-- Desktop Nav - Updated Order --><div class="hidden md:flex md:items-center md:space-x-8">
+                    <a href="#how-it-works" class="text-gray-300 hover:text-white transition-colors scroll-link">How It Works</a>
+                    <a href="#analyzer" class="text-gray-300 hover:text-white transition-colors scroll-link">Analyzer</a>
+                    <a href="#advantage" class="text-gray-300 hover:text-white transition-colors scroll-link">Advantage</a>
+                    <a href="#testimonials" class="text-gray-300 hover:text-white transition-colors scroll-link">Testimonials</a>
+                </div>
+                
+                <!-- CTA & Mobile Menu Button --><div class="flex items-center">
+                    <a href="#engage" class="hidden md:inline-block text-sm font-medium text-cyan-400 border border-cyan-400 rounded-md py-2 px-4 hover:bg-cyan-400/10 transition-all scroll-link">
+                        Start Optimizing
+                    </a>
+                    <!-- Mobile menu button --><button id="menu-btn" type="button" class="md:hidden ml-4 inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-cyan-500">
+                        <span class="sr-only">Open main menu</span>
+                        <!-- Icon for menu open --><svg class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Mobile Menu - Updated Order --><div id="mobile-menu" class="hidden md:hidden fixed inset-0 z-40 bg-gray-950/95 backdrop-blur-xl">
+            <div class="pt-16 px-4">
+                <div class="flex justify-end">
+                    <button id="close-btn" type="button" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-cyan-500">
+                        <span class="sr-only">Close menu</span>
+                        <!-- Icon for menu close --><svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="mt-6 flex flex-col items-center space-y-6">
+                    <a href="#home" class="text-2xl font-medium text-gray-300 hover:text-white transition-colors scroll-link">Home</a>
+                    <a href="#how-it-works" class="text-2xl font-medium text-gray-300 hover:text-white transition-colors scroll-link">How It Works</a>
+                    <a href="#analyzer" class="text-2xl font-medium text-gray-300 hover:text-white transition-colors scroll-link">Analyzer</a>
+                    <a href="#advantage" class="text-2xl font-medium text-gray-300 hover:text-white transition-colors scroll-link">Advantage</a>
+                    <a href="#testimonials" class="text-2xl font-medium text-gray-300 hover:text-white transition-colors scroll-link">Testimonials</a>
+                    <a href="#engage" class="text-2xl font-medium btn-primary scroll-link">
+                        Start Optimizing
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content --><main>
+
+        <!-- Hero Section --><section id="home" class="pt-32 pb-24 md:pt-48 md:pb-32 relative hero-glow">
+             <canvas id="heroCanvas"></canvas> <!-- Added Hero Canvas --><div class="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center relative z-10"> <!-- Added relative z-10 --><h1 class="text-4xl md:text-6xl font-black text-white"> <!-- Updated Font Size & removed tracking -->AUTONOMOUS<br>KPI OPTIMIZATION
+                </h1>
+                <h2 class="mt-4 text-2xl md:text-4xl font-medium text-gray-200">
+                    Stop Guessing. Start Winning.
+                </h2>
+                <p class="mt-6 max-w-2xl mx-auto text-lg md:text-xl text-gray-400">
+                    <!-- Updated Text --><code class="text-gray-300 bg-gray-800/50 px-1 py-0.5 rounded">00Agent</code>
+                    is like having a full product development team continuously ideating, testing, and shipping data-driven optimizations.
+                </p>
+                <!-- Removed paragraph --><div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <!-- Updated Button Style --><a href="#analyzer" class="holographic-glitch-btn scroll-link w-full sm:w-auto">
+                        <span>Analyze Your Site</span>
+                    </a>
+                    <!-- Removed "What is 00Agent" link --></div>
+            </div>
+        </section>
+
+        <!-- How It Works Section --><section id="how-it-works" class="py-20 md:py-28 bg-gray-950">
+            <div class="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <div class="text-center max-w-3xl mx-auto">
+                    <h2 class="text-3xl md:text-4xl font-bold text-white">
+                        Continuous optimization loop.
+                    </h2>
+                    <p class="mt-4 text-lg text-gray-400">
+                        <code class="text-gray-300 bg-gray-800/50 px-1 py-0.5 rounded">00Agent</code>
+                        autonomously writes data-driven production-ready code to optimize KPIs
+                    </p>
+                </div>
+
+                <div class="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    
+                    <!-- Step 1: Analyze --><div class="feature-card p-6 rounded-lg shadow-lg">
+                        <div class="flex items-center">
+                            <svg class="h-8 w-8 text-cyan-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                            <h3 class="ml-3 text-xl font-agent-name text-white">1. ANALYZE</h3>
+                        </div>
+                        <p class="mt-4 text-gray-400">
+                            Continuously analyzes your code and user analytics to find high-impact opportunities for KPI improvements.
+                        </p>
+                    </div>
+
+                    <!-- Step 2: Strategize --><div class="feature-card p-6 rounded-lg shadow-lg">
+                        <div class="flex items-center">
+                             <svg class="h-8 w-8 text-cyan-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 0 0-10 10c0 4.42 2.87 8.17 6.84 9.5.6.11.82-.26.82-.57 0-.28-.01-1.02-.01-2-2.8.6-3.39-1.34-3.39-1.34-.55-1.38-1.34-1.75-1.34-1.75-1.08-.74.08-.72.08-.72 1.2.08 1.83 1.23 1.83 1.23 1.07 1.83 2.8 1.3 3.48 1 .1-.78.42-1.3.76-1.6-2.66-.3-5.46-1.33-5.46-5.93 0-1.31.47-2.38 1.23-3.22-.12-.3-.54-1.52.12-3.18 0 0 1-.32 3.3 1.23.95-.26 1.98-.4 3-.4s2.05.13 3 .4c2.28-1.55 3.3-1.23 3.3-1.23.66 1.66.24 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.61-2.81 5.62-5.48 5.92.43.37.82 1.1.82 2.22 0 1.6-.01 2.89-.01 3.29 0 .31.21.69.82.57A10 10 0 0 0 22 12 10 10 0 0 0 12 2Z"/></svg>
+                            <h3 class="ml-3 text-xl font-agent-name text-white">2. STRATEGIZE</h3>
+                        </div>
+                        <p class="mt-4 text-gray-400">
+                            Develops a comprehensive test strategy (A/B, MVT) with hypotheses, target metrics, and variant definitions.
+                        </p>
+                    </div>
+                    
+                    <!-- Step 3: Implement --><div class="feature-card p-6 rounded-lg shadow-lg">
+                        <div class="flex items-center">
+                            <svg class="h-8 w-8 text-cyan-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+                            <h3 class="ml-3 text-xl font-agent-name text-white">3. IMPLEMENT</h3>
+                        </div>
+                        <p class="mt-4 text-gray-400">
+                            Autonomously writes production-ready UI code for all test variants, ensuring seamless integration.
+                        </p>
+                    </div>
+
+                    <!-- Step 4: Test & Route --><div class="feature-card p-6 rounded-lg shadow-lg">
+                        <div class="flex items-center">
+                            <svg class="h-8 w-8 text-cyan-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="3" x2="6" y2="15"></line><circle cx="18" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><path d="M18 9a9 9 0 0 1-9 9"></path></svg>
+                            <h3 class="ml-3 text-xl font-agent-name text-white">4. TEST & ROUTE</h3>
+                        </div>
+                        <p class="mt-4 text-gray-400">
+                            Implements split-traffic A/B and MVT, monitors results, and automatically routes users to the winning variant.
+                        </p>
+                    </div>
+
+                    <!-- Step 5: Report --><div class="feature-card p-6 rounded-lg shadow-lg">
+                        <div class="flex items-center">
+                            <svg class="h-8 w-8 text-cyan-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"></line><line x1="18" y1="20" x2="18" y2="4"></line><line x1="6" y1="20" x2="6" y2="16"></line></svg>
+                            <h3 class="ml-3 text-xl font-agent-name text-white">5. REPORT</h3>
+                        </div>
+                        <p class="mt-4 text-gray-400">
+                            Generates a clear report, detailing experiment results and direct impact on your KPIs for the team.
+                        </p>
+                    </div>
+                    
+                    <!-- Step 6: Merge --><div class="feature-card p-6 rounded-lg shadow-lg">
+                        <div class="flex items-center">
+                            <svg class="h-8 w-8 text-cyan-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 18c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z"></path><path d="M6 6v12"></path><path d="M18 14H6"></path></svg>
+                            <h3 class="ml-3 text-xl font-agent-name text-white">6. MERGE</h3>
+                        </div>
+                        <p class="mt-4 text-gray-400">
+                            Automatically creates a pull request to merge the winning variant's code directly into your codebase.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Gemini Site Analyzer Section (Moved) --><section id="analyzer" class="py-20 md:py-28 bg-gray-900">
+            <div class="container mx-auto px-6">
+                <div class="bg-gray-950 p-8 md:p-12 rounded-2xl border border-gray-700/50 shadow-lg max-w-4xl mx-auto">
+                    <!-- Emoji removed --><h3 class="text-2xl md:text-3xl font-extrabold text-white mb-2 text-center">Give it a spin!</h3>
+                    <!-- Text updated --><p class="text-base text-gray-400 mb-6 text-center">Provide your website URL and <code class="text-gray-300 bg-gray-800/50 px-1 py-0.5 rounded">00Agent</code> will suggest A/B tests to improve your KPIs.</p>
+                    
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <input type="url" id="urlInput" placeholder="www.yourwebsite.com" class="w-full sm:flex-1 px-4 py-2 border rounded-lg form-input focus:outline-none min-w-0" />
+                        <!-- Updated Button Style --><button id="getRecsBtn" class="holographic-glitch-btn w-full sm:w-auto whitespace-nowrap">
+                            <span>Analyze Site</span>
+                        </button>
+                    </div>
+                    <div id="test-ideas-loader" class="hidden">
+                        <div class="loader"></div>
+                    </div>
+                    <!-- Results container --><div id="testIdeasResult" class="mt-6 text-gray-300 bg-gray-900/50 p-4 sm:p-6 rounded-lg border border-gray-700/50 hidden">
+                        <!-- Dynamic content will be injected here --></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Optimization Advantage Section (Moved) --><section id="advantage" class="py-20 md:py-28">
+            <canvas id="advantageCanvas"></canvas> <!-- Added Advantage Canvas --><div class="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10"> <!-- Added relative z-10 --><div class="text-center max-w-3xl mx-auto">
+                    <h2 class="text-3xl md:text-4xl font-bold text-white tracking-tight">
+                        The Optimization Advantage
+                    </h2>
+                    <!-- Text updated --><p class="mt-6 text-lg text-gray-400">
+                        <code class="text-gray-300 bg-gray-800/50 px-1 py-0.5 rounded">00Agent</code> provides a continuous, data-driven optimization engine at the heart of your product that works 24/7.
+                    </p>
+                </div>
+                <div class="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-10">
+                    
+                    <!-- Benefit 1: PM --><div class="flex">
+                        <div class="flex-shrink-0">
+                            <!-- Unique Icon 1 (Speed) --><svg class="h-7 w-7 text-cyan-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg>
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="text-lg font-medium text-white">Autonomous KPI Velocity</h4>
+                            <p class="mt-1 text-gray-400 text-sm">
+                                Stop waiting for the next sprint. <code class="text-gray-300 bg-gray-800/50 px-1 py-0.5 rounded">00Agent</code> constantly tests new hypotheses, accelerating your KPI growth automatically.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Benefit 2: PM --><div class="flex">
+                        <div class="flex-shrink-0">
+                            <!-- Unique Icon 2 (Data/Chart) --><svg class="h-7 w-7 text-cyan-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="text-lg font-medium text-white">Data-Driven Roadmap</h4>
+                            <p class="mt-1 text-gray-400 text-sm">
+                                Move beyond guesswork. Every feature enhancement is validated with real-world user data, ensuring you only ship what's proven to work.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Benefit 3: Engineer --><div class="flex">
+                        <div class="flex-shrink-0">
+                            <!-- Unique Icon 3 (Reduced Effort/Magic Wand) --><svg class="h-7 w-7 text-cyan-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H18a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2h-2.5"/><path d="M12 22v-6"/><path d="M8 16v6"/><path d="M4 16v6"/><path d="M12 10V2.5"/><path d="M6 10V2.5"/><path d="M18 10V2.5"/><path d="M14.5 10h5.5"/><path d="M2.5 10h7.5"/><path d="M8 10h8"/></svg>
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="text-lg font-medium text-white">Eliminate A/B Toil</h4>
+                            <p class="mt-1 text-gray-400 text-sm">
+                                Reclaim your time. The agent handles variant coding, traffic splitting, and cleanup, letting you focus on core architecture, not experiment plumbing.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Benefit 4: Engineer --><div class="flex">
+                        <div class="flex-shrink-0">
+                            <!-- Unique Icon 4 (Automation/Git Pull Request) --><svg class="h-7 w-7 text-cyan-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7"/><path d="M6 9v12"/></svg>
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="text-lg font-medium text-white">Automated PRs for Winners</h4>
+                            <p class="mt-1 text-gray-400 text-sm">
+                                The loop closes itself. <code class="text-gray-300 bg-gray-800/50 px-1 py-0.5 rounded">00Agent</code> automatically creates a clean, production-ready pull request to merge the winning variant.
+                            </p>
+                        </div>
+                    </div>
+                        
+                    <!-- Benefit 5: Designer --><div class="flex">
+                        <div class="flex-shrink-0">
+                            <!-- Unique Icon 5 (Feedback/Message) --><svg class="h-7 w-7 text-cyan-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="text-lg font-medium text-white">Rapid, Real-World Feedback</h4>
+                            <p class="mt-1 text-gray-400 text-sm">
+                                See your design variations live in front of real users in hours, not weeks. Get quantitative data on which design *actually* performs better.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Benefit 6: Designer --><div class="flex">
+                        <div class="flex-shrink-0">
+                            <!-- Unique Icon 6 (Fidelity/Layers) --><svg class="h-7 w-7 text-cyan-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="text-lg font-medium text-white">Test Beyond the Prototype</h4>
+                            <p class="mt-1 text-gray-400 text-sm">
+                                Go beyond Figma click-tests. <code class="text-gray-300 bg-gray-800/50 px-1 py-0.5 rounded">00Agent</code> implements and tests fully coded UI variants for high-fidelity data.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Benefit 7: All --><div class="flex">
+                        <div class="flex-shrink-0">
+                            <!-- Unique Icon 7 (Culture/Brain) --><svg class="h-7 w-7 text-cyan-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5V6H9.75A2.75 2.75 0 0 0 7 8.75V11h2.5"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5V6h2.25A2.75 2.75 0 0 1 17 8.75V11h-2.5"/><path d="M9 11v-1a3 3 0 0 0-3-3H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M15 11v-1a3 3 0 0 1 3-3h2a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-2"/><path d="M9 11v8a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-8"/><path d="M15 11h-6"/></svg>
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="text-lg font-medium text-white">Embed an Optimization Culture</h4>
+                            <p class="mt-1 text-gray-400 text-sm">
+                                Install a tireless team member dedicated 24/7 to finding and implementing incremental gains, making optimization part of your DNA.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Benefit 8: All --><div class="flex">
+                        <div class="flex-shrink-0">
+                            <!-- Unique Icon 8 (Risk/Shield Check) --><svg class="h-7 w-7 text-cyan-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="text-lg font-medium text-white">Reduce Risk, Maximize Wins</h4>
+                            <p class="mt-1 text-gray-400 text-sm">
+                                Never deploy a "bad" change again. Every idea is tested and proven with a subset of traffic before it's rolled out, minimizing risk.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Enterprise Trust Section - REMOVED --><!-- Customer Testimonials Section --><section id="testimonials" class="py-20 md:py-28 bg-gray-950">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-16">
+                     <span class="text-cyan-400 font-semibold uppercase tracking-wider inline-flex items-center gap-x-2">
+                         Wall of Love
+                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-cyan-500 pulsing-heart" viewBox="0 0 20 20" fill="currentColor">
+                           <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
+                         </svg>
+                       </span>
+                    <h2 class="text-3xl md:text-4xl font-extrabold text-white mt-2">Loved by High-Velocity Engineering Teams</h2>
+                </div>
+                <!-- Added default theme class --><div id="testimonial-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 testimonial-theme-default">
+                    <!-- Testimonial 1 --><div class="pt-10 px-8 pb-8 rounded-lg testimonial-card">
+                        <div class="testimonial-content">
+                            <p class="testimonial-text mb-6 relative">
+                                <span class="absolute -top-3 -left-4 text-6xl quote-mark font-serif">“</span>
+                                We went from deploying code to having a live A/B test in minutes, not weeks. <code class="text-gray-300 bg-gray-800/50 px-1 py-0.5 rounded">00Agent</code> has completely changed our development cycle.
+                            </p>
+                            <div class="font-semibold flex items-center author-info">
+                                <img src="https://placehold.co/40x40/374151/9ca3af?text=SJ" onerror="this.src='https://placehold.co/40x40/374151/9ca3af?text=SJ'" class="rounded-full mr-3 w-10 h-10 author-avatar object-cover" alt="Sarah Johnson avatar">
+                                <div>
+                                    <p class="author-name">Sarah Johnson</p>
+                                    <p class="text-sm author-title font-normal">VP of Engineering, Innovate Inc.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Testimonial 2 --><div class="pt-10 px-8 pb-8 rounded-lg testimonial-card">
+                        <div class="testimonial-content">
+                             <p class="testimonial-text mb-6 relative">
+                                <span class="absolute -top-3 -left-4 text-6xl quote-mark font-serif">“</span>
+                                Our conversion rate agent has already identified and shipped changes that resulted in a 15% uplift. It's like having a dedicated CRO team on autopilot.
+                            </p>
+                            <div class="font-semibold flex items-center author-info">
+                                <img src="https://placehold.co/40x40/374151/9ca3af?text=JT" onerror="this.src='https://placehold.co/40x40/374151/9ca3af?text=JT'" class="rounded-full mr-3 w-10 h-10 author-avatar object-cover" alt="Javier Tiemo avatar">
+                                <div>
+                                    <p class="author-name">Javier Tiemo</p>
+                                    <p class="text-sm author-title font-normal">Head of Growth, QuantumLeap</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Testimonial 3 --><div class="pt-10 px-8 pb-8 rounded-lg testimonial-card">
+                        <div class="testimonial-content">
+                             <p class="testimonial-text mb-6 relative">
+                                <span class="absolute -top-3 -left-4 text-6xl quote-mark font-serif">“</span>
+                                Our engineers focus on shipping features, not setting up tests. The agent handles the entire pipeline and just gives us the winning code to merge. It's magic.
+                            </p>
+                            <div class="font-semibold flex items-center author-info">
+                                <img src="https://placehold.co/40x40/374151/9ca3af?text=RS" onerror="this.src='https://placehold.co/40x40/374151/9ca3af?text=RS'" class="rounded-full mr-3 w-10 h-10 author-avatar object-cover" alt="Ramneet Singh avatar">
+                                <div>
+                                    <p class="author-name">Ramneet Singh</p>
+                                    <p class="text-sm author-title font-normal">Lead Developer, Apex Enterprises</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center mt-16">
+                     <!-- Updated "Generate a Variant" Button Style (Emoji Removed) --><button id="generateVariantBtn" class="holographic-glitch-btn py-3 px-6">
+                         <span>Generate a Variant</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Us Section (replaces old #engage) --><section id="engage" class="py-20 md:py-28 bg-gray-900">
+            <div class="container mx-auto px-6">
+                <div class="bg-gray-950 p-8 md:p-12 rounded-2xl border border-gray-700/50 max-w-4xl mx-auto">
+                    <div class="grid md:grid-cols-2 gap-12 items-center">
+                        <!-- Contact Info --><div>
+                            <!-- Updated Title --><h2 class="text-3xl md:text-4xl font-extrabold text-white">Hire <code class="text-3xl md:text-4xl font-extrabold text-gray-300 bg-gray-800/50 px-1 py-0.5 rounded">00Agent</code></h2>
+                            <p class="text-base text-gray-400 mt-4">See how an autonomous agent can turn every code deployment into an optimization opportunity. Schedule a demo today.</p>
+                        </div>
+
+                        <!-- Contact Form --><div>
+                            <form id="contactForm">
+                                <div class="mb-4">
+                                    <label for="name" class="block text-gray-300 font-semibold mb-2 text-sm">Full Name</label>
+                                    <!-- Added placeholder --><input type="text" id="name" name="name" class="w-full px-4 py-2 border rounded-lg form-input focus:outline-none" placeholder="e.g., Jane Doe" required>
+                                </div>
+                                <div class="mb-4">
+                                    <!-- Updated Asterisk Color --><label for="email" class="block text-gray-300 font-semibold mb-2 text-sm">Email Address <span class="text-pink-400">*</span></label>
+                                    <input type="email" id="email" name="email" class="w-full px-4 py-2 border rounded-lg form-input focus:outline-none" placeholder="you@example.com">
+                                     <p class="text-xs text-gray-500 mt-1">Please provide email or phone.</p>
+                                </div>
+                                <div class="mb-4">
+                                    <!-- Removed (optional) --><label for="phone" class="block text-gray-300 font-semibold mb-2 text-sm">Phone Number</label>
+                                    <input type="tel" id="phone" name="phone" class="w-full px-4 py-2 border rounded-lg form-input focus:outline-none" placeholder="(555) 123-4567">
+                                </div>
+                                <div class="mb-4">
+                                    <label for="website" class="block text-gray-300 font-semibold mb-2 text-sm">Website URL</label>
+                                    <input type="text" id="website" name="website" class="w-full px-4 py-2 border rounded-lg form-input focus:outline-none" placeholder="www.yourwebsite.com" required>
+                                </div>
+                                <div class="mb-4">
+                                    <label for="company-size" class="block text-gray-300 font-semibold mb-2 text-sm">Company Size</label>
+                                    <select id="company-size" name="company-size" class="w-full px-4 py-2 border rounded-lg form-input bg-gray-800 focus:outline-none" required>
+                                        <option value="">Please select</option>
+                                        <option value="1-10">1-10 employees</option>
+                                        <option value="11-50">11-50 employees</option>
+                                        <option value="51-200">51-200 employees</option>
+                                        <option value="201-1000">201-1000 employees</option>
+                                        <option value="1000+">1000+ employees</option>
+                                    </select>
+                                </div>
+                                <div class="mb-6">
+                                    <label for="help-message" class="block text-gray-300 font-semibold mb-2 text-sm">What do you need help with?</label>
+                                    <textarea id="help-message" name="help-message" rows="3" class="w-full px-4 py-2 border rounded-lg form-input focus:outline-none" placeholder="Tell us a little about your project or goals..."></textarea>
+                                </div>
+                                <button type="submit" class="w-full bg-cyan-400 text-gray-950 font-bold py-3 px-6 rounded-lg cta-button gemini-button hover:bg-cyan-300">
+                                    Submit Request
+                                </button>
+                            </form>
+                            <div id="form-success" class="hidden mt-4 text-center p-4 bg-green-900/50 text-green-300 rounded-lg border border-green-700">
+                                Thank you! Your request has been sent.
+                            </div>
+                            <div id="form-error" class="hidden mt-4 text-center p-4 bg-red-900/50 text-red-300 rounded-lg border border-red-700">
+                                <!-- Error message will be shown here --></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer --><footer class="bg-gray-950 border-t border-gray-700/50">
+        <div class="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+            <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+                 <!-- Updated Logo Font --><span class="text-2xl text-white logo-font">
+                    <span class="text-cyan-400">00</span>AGENT
+                </span>
+                <p class="text-sm text-gray-500">
+                    &copy; 2025 00Agent.io. All Missions Confidential.
+                </p>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Code Modal Structure --><div id="codeModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 modal-backdrop">
+        <div class="modal-content rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] flex flex-col">
+            <div class="flex justify-between items-center p-4 border-b border-gray-700">
+                <h3 class="text-lg font-semibold text-white">Generated Code Snippet</h3>
+                <button class="close-modal-btn text-gray-400 hover:text-white text-3xl leading-none">×</button>
+            </div>
+            <div class="p-4 overflow-y-auto">
+                <!-- Linter Fix: Wrapper pre tag --><pre class="code-modal-pre"><code id="modalCodeContent" class="hljs"></code></pre>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Strategy Modal Structure --><div id="strategyModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 modal-backdrop">
+        <div class="modal-content rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] flex flex-col">
+            <div class="flex justify-between items-center p-4 border-b border-gray-700">
+                <h3 class="text-lg font-semibold text-white">Testing Strategy</h3>
+                <button class="close-modal-btn text-gray-400 hover:text-white text-3xl leading-none">×</button>
+            </div>
+            <div id="modalStrategyContent" class="p-6 overflow-y-auto modal-body">
+                <!-- Strategy content will be injected here --></div>
+        </div>
+    </div>
+
+
+    <!-- JavaScript --><script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- API & Model Config ---
+            // Removed modelName, handled by serverless function
+            // Removed hardcoded API key
+
+            // --- Menu Elements ---
+            const menuBtn = document.getElementById('menu-btn');
+            const closeBtn = document.getElementById('close-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const scrollLinks = document.querySelectorAll('.scroll-link');
+
+            // --- Analyzer Elements ---
+            const getRecsBtn = document.getElementById('getRecsBtn');
+            const urlInput = document.getElementById('urlInput');
+            const loader = document.getElementById('test-ideas-loader');
+            const resultsDiv = document.getElementById('testIdeasResult');
+
+            // --- Contact Form Elements ---
+            const contactForm = document.getElementById('contactForm');
+            const formSuccess = document.getElementById('form-success');
+            const formError = document.getElementById('form-error');
+            const contactSubmitBtn = contactForm ? contactForm.querySelector('button[type="submit"]') : null; // Get submit button
+            
+             // --- Testimonial Elements ---
+            const generateVariantBtn = document.getElementById('generateVariantBtn');
+            const testimonialContainer = document.getElementById('testimonial-container');
+            const testimonialThemes = ['testimonial-theme-default', 'testimonial-theme-modern', 'testimonial-theme-minimal', 'testimonial-theme-playful'];
+            let currentThemeIndex = 0;
+            
+            // --- Modal Elements ---
+            const codeModal = document.getElementById('codeModal');
+            const modalCodeContent = document.getElementById('modalCodeContent');
+            const strategyModal = document.getElementById('strategyModal');
+            const modalStrategyContent = document.getElementById('modalStrategyContent');
+            const closeModalBtns = document.querySelectorAll('.close-modal-btn');
+            const modalBackdrops = document.querySelectorAll('.modal-backdrop');
+
+             // --- Canvas Elements & Contexts ---
+            const heroCanvas = document.getElementById('heroCanvas');
+            const advantageCanvas = document.getElementById('advantageCanvas');
+            let heroCtx, advantageCtx;
+            let heroW, heroH, advantageW, advantageH;
+            
+            // --- Hero Canvas Animation Variables ---
+            let heroParticles = [];
+            const heroParticleCount = 80;
+            const heroBaseSpeed = 0.5;
+            const heroAddedSpeed = 1;
+            const heroTargetRadius = 150; // Radius for lines
+            const heroColor = "rgba(34, 211, 238, 0.5)"; // cyan-400 with opacity
+
+            // --- Advantage Canvas Animation Variables ---
+            let advantageParticles = [];
+            const advantageParticleCount = 100;
+            const advantageMaxDist = 100; // Max distance for lines
+            const advantageColor = "rgba(255, 255, 255, 0.6)"; // White with opacity
+
+            // --- Initialize Canvases ---
+            function initCanvases() {
+                if (heroCanvas) {
+                    heroCtx = heroCanvas.getContext('2d');
+                    resizeHeroCanvas();
+                     // Only create particles if they don't exist
+                    if (heroParticles.length === 0) {
+                        for(let i = 0; i < heroParticleCount; i++){
+                            heroParticles.push(new HeroParticle());
+                        }
+                    }
+                }
+                if (advantageCanvas) {
+                    advantageCtx = advantageCanvas.getContext('2d');
+                    resizeAdvantageCanvas();
+                     // Only create particles if they don't exist
+                    if (advantageParticles.length === 0) {
+                        for (let i = 0; i < advantageParticleCount; i++) {
+                            advantageParticles.push(new AdvantageParticle());
+                        }
+                    }
+                }
+            }
+
+             // --- Resize Canvas Functions ---
+            function resizeHeroCanvas() {
+                if (!heroCanvas) return;
+                heroW = heroCanvas.width = heroCanvas.offsetWidth;
+                heroH = heroCanvas.height = heroCanvas.offsetHeight;
+            }
+             function resizeAdvantageCanvas() {
+                if (!advantageCanvas) return;
+                advantageW = advantageCanvas.width = advantageCanvas.offsetWidth;
+                advantageH = advantageCanvas.height = advantageCanvas.offsetHeight;
+            }
+
+
+            // --- Hero Particle Class ---
+            class HeroParticle {
+                constructor(){
+                    // Ensure particles start within bounds after resize
+                    this.x = Math.random() * (heroW || window.innerWidth);
+                    this.y = Math.random() * (heroH || window.innerHeight);
+                    this.vx = (Math.random() - 0.5) * heroBaseSpeed;
+                    this.vy = (Math.random() - 0.5) * heroBaseSpeed;
+                }
+                update(){
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    if(this.x < 0 || this.x > heroW) this.vx *= -1;
+                    if(this.y < 0 || this.y > heroH) this.vy *= -1;
+                }
+                draw(){
+                    if (!heroCtx) return; // Add check
+                    heroCtx.beginPath();
+                    heroCtx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+                    heroCtx.fillStyle = heroColor;
+                    heroCtx.fill();
+                }
+            }
+
+            // --- Advantage Particle Class ---
+             class AdvantageParticle {
+                constructor() {
+                    this.x = Math.random() * (advantageW || window.innerWidth);
+                    this.y = Math.random() * (advantageH || window.innerHeight);
+                    this.radius = Math.random() * 1.5 + 1; // Smaller dots
+                    this.vx = (Math.random() - 0.5) * 0.5; // Slower speed
+                    this.vy = (Math.random() - 0.5) * 0.5;
+                }
+                draw() {
+                     if (!advantageCtx) return; // Add check
+                    advantageCtx.beginPath();
+                    advantageCtx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+                    advantageCtx.fillStyle = advantageColor;
+                    advantageCtx.fill();
+                }
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+
+                    // Wall collision
+                    if (this.x < 0 || this.x > advantageW) this.vx *= -1;
+                    if (this.y < 0 || this.y > advantageH) this.vy *= -1;
+                }
+            }
+            
+            // --- Draw Hero Lines ---
+             function drawHeroLines(){
+                if (!heroCtx) return; // Add check
+                let x1, y1, x2, y2, length, opacity;
+                for(let i = 0; i < heroParticles.length; i++){
+                    for(let j = i + 1; j < heroParticles.length; j++){
+                        x1 = heroParticles[i].x;
+                        y1 = heroParticles[i].y;
+                        x2 = heroParticles[j].x;
+                        y2 = heroParticles[j].y;
+                        length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+                        if(length < heroTargetRadius){
+                            opacity = 1 - length / heroTargetRadius;
+                            heroCtx.lineWidth = 0.5; // Thinner lines
+                            heroCtx.strokeStyle = `rgba(34, 211, 238, ${opacity * 0.5})`; // Apply opacity
+                            heroCtx.beginPath();
+                            heroCtx.moveTo(x1, y1);
+                            heroCtx.lineTo(x2, y2);
+                            heroCtx.stroke();
+                        }
+                    }
+                }
+            }
+
+            // --- Draw Advantage Lines ---
+            function drawAdvantageLines() {
+                 if (!advantageCtx) return; // Add check
+                for (let i = 0; i < advantageParticles.length; i++) {
+                    for (let j = i + 1; j < advantageParticles.length; j++) {
+                        const dx = advantageParticles[i].x - advantageParticles[j].x;
+                        const dy = advantageParticles[i].y - advantageParticles[j].y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+
+                        if (dist < advantageMaxDist) {
+                            const opacity = 1 - dist / advantageMaxDist;
+                            advantageCtx.beginPath();
+                            advantageCtx.strokeStyle = `rgba(255, 255, 255, ${opacity * 0.4})`; // Apply opacity
+                            advantageCtx.lineWidth = 0.5; // Thinner lines
+                            advantageCtx.moveTo(advantageParticles[i].x, advantageParticles[i].y);
+                            advantageCtx.lineTo(advantageParticles[j].x, advantageParticles[j].y);
+                            advantageCtx.stroke();
+                        }
+                    }
+                }
+            }
+
+            // --- Hero Animation Loop ---
+            function heroLoop(){
+                if (!heroCtx || !heroW || !heroH) return; // Add more robust check
+                heroCtx.clearRect(0, 0, heroW, heroH);
+                heroParticles.forEach(p => {
+                    p.update();
+                    p.draw();
+                });
+                drawHeroLines();
+                requestAnimationFrame(heroLoop); // Smoother animation
+            }
+
+            // --- Advantage Animation Loop ---
+             function advantageLoop() {
+                if (!advantageCtx || !advantageW || !advantageH) return; // Add more robust check
+                advantageCtx.clearRect(0, 0, advantageW, advantageH);
+                advantageParticles.forEach(p => {
+                    p.update();
+                    p.draw();
+                });
+                drawAdvantageLines();
+                requestAnimationFrame(advantageLoop);
+            }
+
+             // --- Window Resize Listener ---
+             let resizeTimeout;
+            window.addEventListener('resize', () => {
+                // Debounce resize events
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    resizeHeroCanvas();
+                    resizeAdvantageCanvas();
+                    // Optional: Re-initialize particles if needed
+                    // heroParticles = []; advantageParticles = []; initCanvases(); 
+                }, 100); 
+            });
+
+            // --- Mobile Menu Logic ---
+            if (menuBtn && mobileMenu) {
+                menuBtn.addEventListener('click', () => {
+                    mobileMenu.classList.remove('hidden');
+                });
+            }
+            if (closeBtn && mobileMenu) {
+                closeBtn.addEventListener('click', () => {
+                    mobileMenu.classList.add('hidden');
+                });
+            }
+
+            // --- Smooth Scroll Logic ---
+            scrollLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    const href = link.getAttribute('href');
+                    if (href && href.startsWith('#')) {
+                        e.preventDefault();
+                        const targetId = href;
+                        try {
+                            const targetElement = document.querySelector(targetId);
+                            if (targetElement) {
+                                targetElement.scrollIntoView({
+                                    behavior: 'smooth',
+                                    block: 'start'
+                                });
+                            }
+                        } catch (error) {
+                            console.error("Could not scroll to element:", error);
+                        }
+                        if (mobileMenu && !mobileMenu.classList.contains('hidden')) {
+                            mobileMenu.classList.add('hidden');
+                        }
+                    }
+                });
+            });
+            
+            // --- Modal Close Logic ---
+            function hideModals() {
+                if (codeModal) codeModal.classList.add('hidden');
+                if (strategyModal) strategyModal.classList.add('hidden');
+                if (modalCodeContent) modalCodeContent.textContent = ''; // Clear content
+                if (modalStrategyContent) modalStrategyContent.innerHTML = ''; // Clear content
+            }
+            closeModalBtns.forEach(btn => btn.addEventListener('click', hideModals));
+            modalBackdrops.forEach(backdrop => backdrop.addEventListener('click', (e) => {
+                if (e.target === backdrop) {
+                    hideModals();
+                }
+            }));
+
+            // --- JSON Schema for Analyzer ---
+            const recommendationSchema = {
+                type: "ARRAY",
+                items: {
+                    type: "OBJECT",
+                    properties: {
+                        "kpi": { "type": "STRING" },
+                        "title": { "type": "STRING" },
+                        "rationale": { "type": "STRING" },
+                        "codeSnippet": { "type": "STRING" },
+                        "strategy": {
+                            type: "OBJECT",
+                            properties: {
+                                "hypothesis": { "type": "STRING" },
+                                "primaryMetric": { "type": "STRING" },
+                                "targeting": { "type": "STRING" },
+                                "participants": { "type": "STRING" },
+                                "cohortStrategy": { "type": "STRING" },
+                                "successThreshold": { "type": "STRING" }
+                            },
+                            required: ["hypothesis", "primaryMetric", "targeting", "participants", "cohortStrategy", "successThreshold"]
+                        }
+                    },
+                    required: ["kpi", "title", "rationale", "codeSnippet", "strategy"]
+                }
+            };
+            
+            // --- Helper function to escape HTML for display (Text) ---
+            function escapeHTML(str) {
+                if (!str) return '';
+                // More aggressive for general text
+                return str.replace(/[&<>"']/g, function(match) {
+                    return {
+                        '&': '&amp;',
+                        '<': '&lt;',
+                        '>': '&gt;',
+                        '"': '&quot;',
+                        "'": '&#39;'
+                    }[match];
+                });
+            }
+            
+            // --- Helper function for API Error ---
+            function showAnalyzerError(message) {
+                console.error('Analyzer Error:', message);
+                 // Try to parse error if it's a JSON string
+                let displayMessage = message;
+                try {
+                    const errObj = JSON.parse(message);
+                    if (errObj && errObj.error && errObj.error.message) {
+                        displayMessage = `API Error (${errObj.error.code || 'Unknown'}): ${errObj.error.message}`;
+                    } else if (errObj && errObj.error) {
+                        displayMessage = `API Error: ${errObj.error}`;
+                    }
+                } catch(e) { /* Ignore parsing error, use original message */ }
+
+                resultsDiv.innerHTML = `<p class="text-red-400">${escapeHTML(displayMessage)}</p>`;
+                loader.classList.add('hidden');
+                resultsDiv.classList.remove('hidden');
+                getRecsBtn.disabled = false;
+                if(getRecsBtn.querySelector('span')) {
+                    getRecsBtn.querySelector('span').textContent = "Analyze Site";
+                }
+            }
+            
+            // --- Function to trigger analysis (for button click and Enter key) ---
+            async function triggerAnalysis() {
+                let url = urlInput.value; // Use let to modify
+                // REMOVED hardcoded API key
+                
+                // --- Validation ---
+                if (!url) {
+                    showAnalyzerError("Please enter a valid website URL.");
+                    return;
+                }
+
+                // --- Add https:// if missing ---
+                if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                    url = 'https://' + url;
+                    urlInput.value = url; // Update the input field
+                }
+                
+                // Construct API URL for the serverless function
+                const serverlessApiUrl = '/api/call-gemini'; // <-- UPDATED Endpoint
+
+                // Show loader, hide old results
+                loader.classList.remove('hidden');
+                resultsDiv.classList.add('hidden');
+                resultsDiv.innerHTML = ""; // Clear old results
+                getRecsBtn.disabled = true;
+                // --- Update text in span ---
+                if(getRecsBtn.querySelector('span')) {
+                    getRecsBtn.querySelector('span').textContent = "Analyzing...";
+                }
+
+                // --- Prompt for the model ---
+                const schemaString = JSON.stringify(recommendationSchema, null, 2);
+                const prompt = `
+                    Analyze the website at the URL "${url}". 
+                    Based on common UX principles and conversion rate optimization (CRO) best practices, 
+                    identify 3 specific, high-impact A/B test ideas to improve user engagement or conversion.
+                    
+                    IMPORTANT: You MUST return ONLY a valid JSON string that conforms to the following JSON schema. Do not include \`\`\`json markdown delimiters or any other text outside of the JSON string itself.
+                    
+                    Schema:
+                    ${schemaString}
+                    
+                    The codeSnippet in the schema should be a hypothetical, illustrative code example (HTML/JS/CSS) for the test. Ensure the code is formatted with newlines and indentation.
+                `;
+
+                try {
+                    // --- Payload for the serverless function ---
+                    const payload = {
+                        prompt: prompt 
+                        // Optionally add modelName here if you want to override the default in the serverless function
+                    };
+
+                    const response = await fetch(serverlessApiUrl, { // <-- UPDATED Endpoint
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    // Get the response body regardless of status
+                    const result = await response.json(); 
+
+                    if (!response.ok) {
+                        // Use the error message from the serverless function response
+                        const errorMessage = result.error || `API call failed with status ${response.status}`;
+                         // Re-throw to be caught by the outer catch block
+                        throw new Error(errorMessage);
+                    }
+
+                    // --- Process successful response ---
+                    const candidate = result.candidates?.[0];
+
+                     // Check if serverless function returned a safety error message directly
+                    if (result.text && result.text.includes("blocked for safety") || result.text && result.text.includes("request was blocked")) {
+                        throw new Error(result.text); // Let the error handler display the specific message
+                    }
+
+
+                    // --- Parse text response as JSON ---
+                    if (candidate && candidate.content?.parts?.[0]?.text) {
+                        let responseText = candidate.content.parts[0].text;
+                        
+                        // Try to find a JSON block if markdown is included
+                        if (responseText.includes('```json')) {
+                            responseText = responseText.split('```json')[1].split('```')[0].trim();
+                        }
+                        
+                        let recommendations;
+                        try {
+                            recommendations = JSON.parse(responseText);
+                        } catch (parseError) {
+                            console.error("Failed to parse JSON response:", responseText);
+                            throw new Error("The model returned an invalid JSON format. Please try again.");
+                        }
+                        
+                        
+                        let recHtml = "";
+
+                        recommendations.forEach((rec, index) => {
+                            const { kpi, title, rationale, codeSnippet, strategy } = rec;
+                            
+                            // Check if code is likely HTML or JS/CSS
+                            const isHtml = /\s*<[^>]+>\s*/.test(codeSnippet);
+                            const codeLang = isHtml ? 'language-html' : 'language-javascript'; // Assume JS/CSS otherwise
+                            
+                            const strategyHTML = `
+                                <h4><b>Hypothesis</b></h4><p>${escapeHTML(strategy.hypothesis)}</p>
+                                <h4><b>Primary Metric</b></h4><p>${escapeHTML(strategy.primaryMetric)}</p>
+                                <h4><b>Targeting</b></h4><p>${escapeHTML(strategy.targeting)}</p>
+
+                                <div class="strategy-metric-card">
+                                    <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                                    <div><div class="font-bold">Participants</div><div class="text-sm">${escapeHTML(strategy.participants)}</div></div>
+                                </div>
+                                <div class="strategy-metric-card">
+                                    <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                                    <div><div class="font-bold">Cohort Strategy</div><div class="text-sm">${escapeHTML(strategy.cohortStrategy)}</div></div>
+                                </div>
+                                <div class="strategy-metric-card">
+                                     <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <div><div class="font-bold">Success Threshold</div><div class="text-sm">${escapeHTML(strategy.successThreshold)}</div></div>
+                                </div>
+                                <p class="strategy-modal-footer-text">
+                                    Request a demo for a full Testing Strategy report sample.
+                                </p>
+                            `;
+                            
+                            recHtml += `
+                                <div class="recommendation-item">
+                                    <h3>${index + 1}. <span><b>${escapeHTML(kpi)}</b></span></h3><br>
+                                    <p><b>${escapeHTML(title)}</b></p><br>
+                                    <p>${escapeHTML(rationale)}</p>
+                                    
+                                    <div class="mt-4 flex items-center flex-wrap gap-2">
+                                        <!-- Add data-lang attribute --><button class="review-code-btn inline-flex items-center justify-center" data-lang="${codeLang}">
+                                            <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                                            Review Code
+                                        </button>
+                                        <button class="strategy-btn inline-flex items-center justify-center">
+                                            <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                                            Testing Strategy
+                                        </button>
+                                        <a href="#engage" class="learn-more-btn inline-flex items-center justify-center scroll-link">Learn More</a>
+                                    </div>
+
+                                    <!-- Linter Fix: Use textarea to store raw code --><textarea class="code-snippet">${codeSnippet}</textarea>
+
+                                    <!-- Hidden container for strategy details --><div class="strategy-details">
+                                        ${strategyHTML} <!-- Store raw HTML --></div>
+                                </div>
+                            `;
+                            
+                            if (index < recommendations.length - 1) {
+                                recHtml += `<hr class="my-6 border-gray-700">`;
+                            }
+                        });
+                        
+                        resultsDiv.innerHTML = recHtml;
+
+                    } else {
+                         // This case might be hit if the serverless function itself had an issue before calling Gemini
+                         // or if the Gemini response structure was unexpected (but not a safety block handled above)
+                         showAnalyzerError("Sorry, couldn't get recommendations. The server returned an unexpected response.");
+                    }
+
+                } catch (error) {
+                    // Catch errors from fetch itself or errors thrown from response processing
+                    showAnalyzerError(error.message);
+                } finally {
+                    // Hide loader, show results
+                    loader.classList.add('hidden');
+                    resultsDiv.classList.remove('hidden');
+                    getRecsBtn.disabled = false;
+                    // --- Update text in span ---
+                    if(getRecsBtn.querySelector('span')) {
+                        getRecsBtn.querySelector('span').textContent = "Analyze Site";
+                    }
+                }
+            }
+
+
+            // --- Site Analyzer Logic ---
+            if (getRecsBtn) {
+                getRecsBtn.addEventListener('click', triggerAnalysis);
+            }
+            
+            // --- Site Analyzer Enter Key Logic ---
+            if (urlInput) {
+                urlInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.keyCode === 13) {
+                        e.preventDefault(); // Prevent default form submission
+                        triggerAnalysis();  // Call the same function
+                    }
+                });
+            }
+            
+            // --- Event Delegation for Analyzer Results ---
+            if (resultsDiv) {
+                resultsDiv.addEventListener('click', (e) => {
+                    const reviewBtn = e.target.closest('.review-code-btn');
+                    const strategyBtn = e.target.closest('.strategy-btn');
+                    const scrollLink = e.target.closest('.scroll-link');
+
+                    // --- Code Modal Logic ---
+                    if (reviewBtn) {
+                        const item = reviewBtn.closest('.recommendation-item');
+                        // Linter Fix: Get snippet from textarea.value
+                        const snippetContainer = item.querySelector('.code-snippet');
+                        const lang = reviewBtn.getAttribute('data-lang') || 'language-javascript'; // Get lang
+                        
+                        if (snippetContainer && modalCodeContent && codeModal) {
+                            
+                            // Remove old language classes
+                            modalCodeContent.className = 'hljs'; // Reset classes
+                            // Add new language class
+                            modalCodeContent.classList.add(lang);
+                            
+                            // Linter Fix: Set textContent to the raw code from the textarea
+                            modalCodeContent.textContent = snippetContainer.value; 
+                            
+                            // Apply syntax highlighting
+                            if (typeof hljs !== 'undefined') {
+                                // Must re-highlight AFTER setting textContent
+                                hljs.highlightElement(modalCodeContent);
+                            } else {
+                                console.warn("Highlight.js not loaded, code will not be highlighted.");
+                            }
+                            
+                            codeModal.classList.remove('hidden');
+                        }
+                    }
+                    
+                    // --- Strategy Modal Logic ---
+                    if (strategyBtn) {
+                        const item = strategyBtn.closest('.recommendation-item');
+                        const details = item.querySelector('.strategy-details');
+                        if (details && modalStrategyContent && strategyModal) {
+                            // Inject the raw HTML from the hidden div
+                            modalStrategyContent.innerHTML = details.innerHTML;
+                            strategyModal.classList.remove('hidden');
+                        }
+                    }
+                    
+                    // Handle smooth scroll for dynamically added links
+                    if (scrollLink) {
+                        e.preventDefault();
+                        const href = scrollLink.getAttribute('href');
+                        const targetId = href;
+                        try {
+                            const targetElement = document.querySelector(targetId);
+                            if (targetElement) {
+                                targetElement.scrollIntoView({
+                                    behavior: 'smooth',
+                                    block: 'start'
+                                });
+                            }
+                        } catch (error) {
+                            console.error("Could not scroll to element:", error);
+                        }
+                    }
+                });
+            }
+
+            // --- Contact Form Logic ---
+            if (contactForm && contactSubmitBtn) { // Added check for button
+                contactForm.addEventListener('submit', async (e) => { // Make async
+                    e.preventDefault(); 
+                    
+                    // Clear previous messages
+                    formSuccess.classList.add('hidden');
+                    formError.classList.add('hidden');
+                    formError.textContent = ''; // Clear error text
+                    contactSubmitBtn.disabled = true; // Disable button during submission
+                    const originalButtonText = contactSubmitBtn.textContent;
+                    contactSubmitBtn.textContent = 'Sending...';
+                    
+                    // --- Get Form Data ---
+                    const formData = new FormData(contactForm);
+                    const formProps = Object.fromEntries(formData); // Convert to plain object
+                    
+                    // --- Validation (Client-side) ---
+                    if (!formProps.email && !formProps.phone) {
+                        formError.textContent = "Please provide either an email or phone number.";
+                        formError.classList.remove('hidden');
+                        contactSubmitBtn.disabled = false; 
+                        contactSubmitBtn.textContent = originalButtonText;
+                        return;
+                    }
+                     if (!formProps.website) { // Example: Add website validation
+                         formError.textContent = "Please provide your website URL.";
+                         formError.classList.remove('hidden');
+                         contactSubmitBtn.disabled = false;
+                         contactSubmitBtn.textContent = originalButtonText;
+                         return;
+                     }
+
+                    // --- Send to Serverless Function ---
+                    try {
+                        const response = await fetch('/api/send-email', { // <-- UPDATED Endpoint
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(formProps),
+                        });
+
+                        const result = await response.json();
+
+                        if (!response.ok) {
+                            // Use error from serverless function response if available
+                           throw new Error(result.error || `Failed to send message (Status: ${response.status})`);
+                        }
+                        
+                        // --- Handle Success ---
+                        contactForm.reset();
+                        formSuccess.classList.remove('hidden');
+                        setTimeout(() => {
+                            formSuccess.classList.add('hidden');
+                        }, 5000);
+
+                    } catch (error) {
+                         // --- Handle Fetch/Server Error ---
+                        console.error("Contact Form Error:", error);
+                        formError.textContent = error.message || "An unexpected error occurred. Please try again.";
+                        formError.classList.remove('hidden');
+                    } finally {
+                        // Re-enable button and restore text
+                        contactSubmitBtn.disabled = false; 
+                        contactSubmitBtn.textContent = originalButtonText;
+                    }
+                });
+            }
+
+             // --- Generate Variant Button Logic ---
+            if (generateVariantBtn && testimonialContainer) {
+                generateVariantBtn.addEventListener('click', () => {
+                    // Remove all existing theme classes
+                    testimonialThemes.forEach(theme => testimonialContainer.classList.remove(theme));
+                    
+                    // Cycle to the next theme index
+                    currentThemeIndex = (currentThemeIndex + 1) % testimonialThemes.length;
+                    
+                    // Add the new theme class
+                    testimonialContainer.classList.add(testimonialThemes[currentThemeIndex]);
+                });
+            }
+            
+            // --- Init Canvases and Start Animations ---
+             initCanvases();
+             if (heroCtx) heroLoop();
+             if (advantageCtx) advantageLoop();
+             
+             // Initial highlight for any static code if needed (optional)
+             if (typeof hljs !== 'undefined') {
+                hljs.highlightAll();
+            }
+
+
+        });
+    </script>
+</body>
+</html>
+
