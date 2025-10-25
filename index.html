@@ -58,7 +58,7 @@
         }
 
         /* --- Canvas Background Styles --- */
-        #heroCanvas, #advantageCanvas {
+        #advantageCanvas, #matrixCanvas { /* Added matrixCanvas */
             position: absolute;
             top: 0;
             left: 0;
@@ -66,6 +66,7 @@
             height: 100%;
             z-index: -1; /* Place behind content */
             pointer-events: none; /* Make it non-interactive */
+            display: block; /* Ensure canvas takes up space */
         }
         
         /* Ensure sections with canvases are positioned relatively */
@@ -73,6 +74,8 @@
             position: relative;
             overflow: hidden; /* Prevent canvas overflow */
         }
+        
+        /* --- Removed Hero Fire Effect Styles --- */
         
         /* --- End Canvas Styles --- */
 
@@ -348,11 +351,29 @@
             width: 40px;
             height: 40px;
             animation: spin 1s linear infinite;
-            margin: 20px auto;
+            margin: 20px auto 0; /* Adjusted margin */
         }
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+        
+        /* --- Loading Text Animation --- */
+        #loading-text {
+            min-height: 1.5em; /* Ensure space for text + cursor */
+            position: relative;
+            display: inline-block; /* Center text correctly */
+        }
+        #loading-text::after {
+            content: '_';
+            display: inline-block;
+            animation: blink-cursor 0.7s infinite;
+            color: var(--primary-color);
+            margin-left: 2px;
+        }
+        @keyframes blink-cursor {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
         }
         
         /* Pulsing heart for testimonials */
@@ -563,14 +584,16 @@
     <!-- Main Content --><main>
 
         <!-- Hero Section --><section id="home" class="pt-32 pb-24 md:pt-48 md:pb-32 relative hero-glow">
-             <canvas id="heroCanvas"></canvas> <!-- Added Hero Canvas --><div class="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center relative z-10"> <!-- Added relative z-10 --><h1 class="text-4xl md:text-6xl font-black text-white"> <!-- Updated Font Size & removed tracking -->AUTONOMOUS<br>KPI OPTIMIZATION
+             <!-- Replaced Fire Div with Matrix Canvas --><canvas id="matrixCanvas"></canvas> 
+             <div class="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center relative z-10"> <!-- Added relative z-10 --><h1 class="text-4xl md:text-6xl font-black text-white"> <!-- Updated Font Size & removed tracking -->AUTONOMOUS<br>KPI OPTIMIZATION
                 </h1>
                 <h2 class="mt-4 text-2xl md:text-4xl font-medium text-gray-200">
                     Stop Guessing. Start Winning.
                 </h2>
+                <!-- UPDATED SUBTITLE HERE -->
                 <p class="mt-6 max-w-2xl mx-auto text-lg md:text-xl text-gray-400">
-                    <!-- Updated Text --><code class="text-gray-300 bg-gray-800/50 px-1 py-0.5 rounded">00Agent</code>
-                    is like having a full product development team continuously ideating, testing, and shipping data-driven optimizations.
+                    <code class="text-gray-300 bg-gray-800/50 px-1 py-0.5 rounded">00Agent</code>
+                    is like having a data-driven product development team continuously ideating, testing, and pushing production-ready code to optimize KPIs.
                 </p>
                 <!-- Removed paragraph --><div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
                     <!-- Updated Button Style --><a href="#analyzer" class="holographic-glitch-btn scroll-link w-full sm:w-auto">
@@ -586,9 +609,10 @@
                     <h2 class="text-3xl md:text-4xl font-bold text-white">
                         Continuous optimization loop.
                     </h2>
+                    <!-- Swapped Subheader -->
                     <p class="mt-4 text-lg text-gray-400">
                         <code class="text-gray-300 bg-gray-800/50 px-1 py-0.5 rounded">00Agent</code>
-                        autonomously writes data-driven production-ready code to optimize KPIs
+                        provides optimization that never sleeps. Don't lose track of your targets.
                     </p>
                 </div>
 
@@ -669,8 +693,11 @@
                             <span>Analyze Site</span>
                         </button>
                     </div>
-                    <div id="test-ideas-loader" class="hidden">
+                    <!-- Loader Container -->
+                    <div id="loader-container" class="hidden text-center">
                         <div class="loader"></div>
+                        <!-- New Loading Text Element -->
+                        <div id="loading-text" class="mt-4 text-cyan-400 font-mono"></div>
                     </div>
                     <!-- Results container --><div id="testIdeasResult" class="mt-6 text-gray-300 bg-gray-900/50 p-4 sm:p-6 rounded-lg border border-gray-700/50 hidden">
                         <!-- Dynamic content will be injected here --></div>
@@ -683,8 +710,9 @@
                     <h2 class="text-3xl md:text-4xl font-bold text-white tracking-tight">
                         The Optimization Advantage
                     </h2>
-                    <!-- Text updated --><p class="mt-6 text-lg text-gray-400">
-                        <code class="text-gray-300 bg-gray-800/50 px-1 py-0.5 rounded">00Agent</code> provides optimization that never sleeps. Don't lose track of your targets.
+                    <!-- Swapped Subheader -->
+                    <p class="mt-6 text-lg text-gray-400">
+                        <code class="text-gray-300 bg-gray-800/50 px-1 py-0.5 rounded">00Agent</code> autonomously writes data-driven production-ready code to optimize KPIs.
                     </p>
                 </div>
                 <div class="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-10">
@@ -965,8 +993,34 @@
             // --- Analyzer Elements ---
             const getRecsBtn = document.getElementById('getRecsBtn');
             const urlInput = document.getElementById('urlInput');
-            const loader = document.getElementById('test-ideas-loader');
+            const loaderContainer = document.getElementById('loader-container'); // Updated selector
+            const loader = loaderContainer ? loaderContainer.querySelector('.loader') : null; // Get spinner within container
+            const loadingTextElement = document.getElementById('loading-text'); // New element
             const resultsDiv = document.getElementById('testIdeasResult');
+
+            // --- Loading Animation Variables ---
+            const loadingMessages = [
+                "Securing the perimeter...",
+                "Assessing the situation...",
+                "Preparing for operation...",
+                "Coordinating resources...",
+                "Initiating reconnaissance...",
+                "Analyzing target vectors...",
+                "Decrypting intelligence...",
+                "Establishing secure comms...",
+                "Deploying covert agents...",
+                "Synchronizing chronometers...",
+                "Checking for bugs (literal and metaphorical)...",
+                "Verifying authentication codes...",
+                "Optimizing stealth protocols...",
+                "Engaging AI analysis engine..."
+            ];
+            let currentMessageIndex = 0;
+            let loadingIntervalId = null;
+            let currentTimeoutId = null; // To clear timeouts if stopped early
+            const typingSpeed = 70; // ms per character
+            const eraseSpeed = 40; // ms per character
+            const messagePause = 1500; // ms between messages
 
             // --- Contact Form Elements ---
             const contactForm = document.getElementById('contactForm');
@@ -989,18 +1043,21 @@
             const modalBackdrops = document.querySelectorAll('.modal-backdrop');
 
              // --- Canvas Elements & Contexts ---
-            const heroCanvas = document.getElementById('heroCanvas');
             const advantageCanvas = document.getElementById('advantageCanvas');
-            let heroCtx, advantageCtx;
-            let heroW, heroH, advantageW, advantageH;
-            
-            // --- Hero Canvas Animation Variables ---
-            let heroParticles = [];
-            const heroParticleCount = 80;
-            const heroBaseSpeed = 0.5;
-            const heroAddedSpeed = 1;
-            const heroTargetRadius = 150; // Radius for lines
-            const heroColor = "rgba(34, 211, 238, 0.5)"; // cyan-400 with opacity
+            let advantageCtx;
+            let advantageW, advantageH;
+             // Renamed fireCanvas to matrixCanvas (though ID remains matrixCanvas in HTML)
+             const matrixCanvas = document.getElementById('matrixCanvas'); 
+             let matrixCtx;
+             
+            // --- Matrix Effect Variables ---
+            let matrixColumns;
+            let matrixDrops = [];
+            let matrixFontSize = 14; 
+            // Updated characters to 0s and 1s
+            let matrixChars = "01".split(''); 
+            let matrixColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim(); // Get cyan color
+
 
             // --- Advantage Canvas Animation Variables ---
             let advantageParticles = [];
@@ -1008,18 +1065,9 @@
             const advantageMaxDist = 100; // Max distance for lines
             const advantageColor = "rgba(255, 255, 255, 0.6)"; // White with opacity
 
-            // --- Initialize Canvases ---
-            function initCanvases() {
-                if (heroCanvas) {
-                    heroCtx = heroCanvas.getContext('2d');
-                    resizeHeroCanvas();
-                     // Only create particles if they don't exist
-                    if (heroParticles.length === 0) {
-                        for(let i = 0; i < heroParticleCount; i++){
-                            heroParticles.push(new HeroParticle());
-                        }
-                    }
-                }
+            // --- Initialize Canvases & Effects ---
+            function initEffects() {
+                // Advantage Canvas Init
                 if (advantageCanvas) {
                     advantageCtx = advantageCanvas.getContext('2d');
                     resizeAdvantageCanvas();
@@ -1029,45 +1077,38 @@
                             advantageParticles.push(new AdvantageParticle());
                         }
                     }
+                     if (advantageCtx) advantageLoop(); // Start advantage animation loop
                 }
+                
+                 // Matrix Effect Init
+                 if (matrixCanvas) {
+                    matrixCtx = matrixCanvas.getContext('2d');
+                    resizeMatrixCanvas(); // Initial size setup
+                    // Start animation loop for Matrix effect
+                    matrixLoop(); 
+                 }
             }
 
              // --- Resize Canvas Functions ---
-            function resizeHeroCanvas() {
-                if (!heroCanvas) return;
-                heroW = heroCanvas.width = heroCanvas.offsetWidth;
-                heroH = heroCanvas.height = heroCanvas.offsetHeight;
-            }
              function resizeAdvantageCanvas() {
                 if (!advantageCanvas) return;
                 advantageW = advantageCanvas.width = advantageCanvas.offsetWidth;
                 advantageH = advantageCanvas.height = advantageCanvas.offsetHeight;
             }
+             // --- Resize Matrix Canvas ---
+            function resizeMatrixCanvas() {
+                 if (!matrixCanvas) return;
+                 matrixCanvas.width = matrixCanvas.offsetWidth;
+                 matrixCanvas.height = matrixCanvas.offsetHeight;
+                 matrixColumns = Math.floor(matrixCanvas.width / matrixFontSize);
+                 matrixDrops = []; // Reset drops on resize
+                 // Stagger the initial drop positions
+                 for (let x = 0; x < matrixColumns; x++) {
+                     // Start most drops above the screen (negative y), some visible
+                     matrixDrops[x] = Math.random() < 0.1 ? 1 : Math.floor(Math.random() * -matrixCanvas.height / matrixFontSize); 
+                 }
+             }
 
-
-            // --- Hero Particle Class ---
-            class HeroParticle {
-                constructor(){
-                    // Ensure particles start within bounds after resize
-                    this.x = Math.random() * (heroW || window.innerWidth);
-                    this.y = Math.random() * (heroH || window.innerHeight);
-                    this.vx = (Math.random() - 0.5) * heroBaseSpeed;
-                    this.vy = (Math.random() - 0.5) * heroBaseSpeed;
-                }
-                update(){
-                    this.x += this.vx;
-                    this.y += this.vy;
-                    if(this.x < 0 || this.x > heroW) this.vx *= -1;
-                    if(this.y < 0 || this.y > heroH) this.vy *= -1;
-                }
-                draw(){
-                    if (!heroCtx) return; // Add check
-                    heroCtx.beginPath();
-                    heroCtx.arc(this.x, this.y, 2, 0, Math.PI * 2);
-                    heroCtx.fillStyle = heroColor;
-                    heroCtx.fill();
-                }
-            }
 
             // --- Advantage Particle Class ---
              class AdvantageParticle {
@@ -1095,30 +1136,6 @@
                 }
             }
             
-            // --- Draw Hero Lines ---
-             function drawHeroLines(){
-                if (!heroCtx) return; // Add check
-                let x1, y1, x2, y2, length, opacity;
-                for(let i = 0; i < heroParticles.length; i++){
-                    for(let j = i + 1; j < heroParticles.length; j++){
-                        x1 = heroParticles[i].x;
-                        y1 = heroParticles[i].y;
-                        x2 = heroParticles[j].x;
-                        y2 = heroParticles[j].y;
-                        length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
-                        if(length < heroTargetRadius){
-                            opacity = 1 - length / heroTargetRadius;
-                            heroCtx.lineWidth = 0.5; // Thinner lines
-                            heroCtx.strokeStyle = `rgba(34, 211, 238, ${opacity * 0.5})`; // Apply opacity
-                            heroCtx.beginPath();
-                            heroCtx.moveTo(x1, y1);
-                            heroCtx.lineTo(x2, y2);
-                            heroCtx.stroke();
-                        }
-                    }
-                }
-            }
-
             // --- Draw Advantage Lines ---
             function drawAdvantageLines() {
                  if (!advantageCtx) return; // Add check
@@ -1141,18 +1158,6 @@
                 }
             }
 
-            // --- Hero Animation Loop ---
-            function heroLoop(){
-                if (!heroCtx || !heroW || !heroH) return; // Add more robust check
-                heroCtx.clearRect(0, 0, heroW, heroH);
-                heroParticles.forEach(p => {
-                    p.update();
-                    p.draw();
-                });
-                drawHeroLines();
-                requestAnimationFrame(heroLoop); // Smoother animation
-            }
-
             // --- Advantage Animation Loop ---
              function advantageLoop() {
                 if (!advantageCtx || !advantageW || !advantageH) return; // Add more robust check
@@ -1164,6 +1169,44 @@
                 drawAdvantageLines();
                 requestAnimationFrame(advantageLoop);
             }
+            
+             // --- Matrix Effect Draw Function ---
+             function drawMatrix() {
+                 if (!matrixCtx || !matrixCanvas) return;
+
+                 // Semi-transparent black background for fading effect
+                 // Increased alpha from 0.05 to 0.1 for less transparency
+                 matrixCtx.fillStyle = "rgba(3, 7, 18, 0.1)"; 
+                 matrixCtx.fillRect(0, 0, matrixCanvas.width, matrixCanvas.height);
+
+                 matrixCtx.fillStyle = matrixColor; // Use cyan color
+                 matrixCtx.font = matrixFontSize + "px Roboto Mono, monospace"; // Use monospace font
+
+                 // Loop over drops
+                 for (let i = 0; i < matrixDrops.length; i++) {
+                     // Get a random character (now 0 or 1)
+                     let text = matrixChars[Math.floor(Math.random() * matrixChars.length)];
+                     // Draw the character
+                     matrixCtx.fillText(text, i * matrixFontSize, matrixDrops[i] * matrixFontSize);
+
+                     // Send the drop back to the top randomly after it crosses the screen
+                     // Add randomness to reset behavior
+                     if (matrixDrops[i] * matrixFontSize > matrixCanvas.height && Math.random() > 0.975) {
+                         matrixDrops[i] = 0; // Reset to top
+                     }
+
+                     // Increment Y coordinate for the drop
+                     matrixDrops[i]++;
+                 }
+             }
+             
+             // --- Matrix Animation Loop ---
+             let matrixIntervalId = null; 
+             function matrixLoop() {
+                 if (matrixIntervalId) clearInterval(matrixIntervalId); // Clear existing interval if any
+                 matrixIntervalId = setInterval(drawMatrix, 50); // Adjust speed here (milliseconds)
+             }
+
 
              // --- Window Resize Listener ---
              let resizeTimeout;
@@ -1171,10 +1214,10 @@
                 // Debounce resize events
                 clearTimeout(resizeTimeout);
                 resizeTimeout = setTimeout(() => {
-                    resizeHeroCanvas();
                     resizeAdvantageCanvas();
+                    resizeMatrixCanvas(); // Resize matrix canvas too
                     // Optional: Re-initialize particles if needed
-                    // heroParticles = []; advantageParticles = []; initCanvases(); 
+                    // advantageParticles = []; initEffects(); 
                 }, 100); 
             });
 
@@ -1271,25 +1314,111 @@
                 });
             }
             
-            // --- Helper function for API Error ---
-            function showAnalyzerError(message) {
-                console.error('Analyzer Error:', message);
-                 // Try to parse error if it's a JSON string
-                let displayMessage = message;
-                try {
-                    const errObj = JSON.parse(message);
-                    if (errObj && errObj.error && errObj.error.message) {
-                        displayMessage = `API Error (${errObj.error.code || 'Unknown'}): ${errObj.error.message}`;
-                    } else if (errObj && errObj.error) {
-                        displayMessage = `API Error: ${errObj.error}`;
-                    }
-                } catch(e) { /* Ignore parsing error, use original message */ }
+             // --- Loading Animation Functions ---
+             function typeWriter(text, i, element, callback) {
+                if (!element) return;
+                if (i < text.length) {
+                    element.innerHTML = text.substring(0, i + 1);
+                    currentTimeoutId = setTimeout(() => typeWriter(text, i + 1, element, callback), typingSpeed);
+                } else if (callback) {
+                    currentTimeoutId = setTimeout(callback, messagePause / 2); // Pause after typing
+                }
+            }
 
-                resultsDiv.innerHTML = `<p class="text-red-400">${escapeHTML(displayMessage)}</p>`;
-                loader.classList.add('hidden');
+            function eraseWriter(text, i, element, callback) {
+                if (!element) return;
+                if (i >= 0) {
+                    element.innerHTML = text.substring(0, i);
+                     currentTimeoutId = setTimeout(() => eraseWriter(text, i - 1, element, callback), eraseSpeed);
+                } else if (callback) {
+                    currentTimeoutId = setTimeout(callback, messagePause / 2); // Pause after erasing
+                }
+            }
+
+            function cycleLoadingMessages() {
+                 if (!loadingTextElement || loadingMessages.length === 0) return;
+                
+                const message = loadingMessages[currentMessageIndex];
+                typeWriter(message, 0, loadingTextElement, () => {
+                     eraseWriter(message, message.length -1, loadingTextElement, () => {
+                        // Move to next message, loop back if needed
+                         currentMessageIndex = (currentMessageIndex + 1) % loadingMessages.length;
+                         // The interval will trigger the next cycle
+                     });
+                 });
+            }
+
+            function startLoadingAnimation() {
+                 if (!loaderContainer || !loadingTextElement) return;
+                
+                 // Clear any previous animation state
+                 stopLoadingAnimation(); 
+                 
+                 loaderContainer.classList.remove('hidden');
+                 loadingTextElement.textContent = ''; // Clear initial text
+                 
+                 // Start the first message immediately
+                 cycleLoadingMessages(); 
+                 
+                 // Set interval for subsequent messages
+                 loadingIntervalId = setInterval(cycleLoadingMessages, messagePause * 2 + (loadingMessages[currentMessageIndex]?.length || 20) * (typingSpeed + eraseSpeed)); 
+            }
+
+            function stopLoadingAnimation() {
+                if (loadingIntervalId) {
+                    clearInterval(loadingIntervalId);
+                    loadingIntervalId = null;
+                }
+                if (currentTimeoutId) {
+                    clearTimeout(currentTimeoutId);
+                    currentTimeoutId = null;
+                }
+                 if (loaderContainer) loaderContainer.classList.add('hidden');
+                 if (loadingTextElement) loadingTextElement.textContent = '';
+            }
+
+            // --- Helper function for API Error ---
+             function showAnalyzerError(message, status = null) { // Added status parameter
+                console.error('Analyzer Error:', message, status ? `(Status: ${status})` : '');
+                stopLoadingAnimation(); // Stop typing animation on error
+
+                let displayMessage = message;
+
+                // Check for specific error types based on status or message content
+                if (status === 404 || message.includes('404')) {
+                    displayMessage = "Error: Could not find the API endpoint (/api/call-gemini). Please check deployment.";
+                } else if (status === 500 || message.includes('500') || message.includes('Internal Server Error')) {
+                     displayMessage = "Error: Server-side issue encountered. Please check the Vercel function logs for '/api/call-gemini'.";
+                } else if (message.includes('API key not configured') ) {
+                     displayMessage = "Error: Gemini API key is missing in the server environment variables (GOOGLE_GENERATIVE_AI_API_KEY).";
+                } else if (message.includes('<!DOCTYPE html>')) {
+                    displayMessage = "Error: Received HTML instead of JSON. This often indicates a server-side error or routing problem. Check Vercel function logs.";
+                 } else {
+                     // Try to parse JSON for more specific API errors
+                     try {
+                         // Check if it looks like HTML, if so, don't parse
+                         if (!message.trim().startsWith('<')) {
+                             const errObj = JSON.parse(message);
+                             if (errObj && errObj.error && errObj.error.message) {
+                                 displayMessage = `API Error (${errObj.error.code || errObj.error.status || 'Unknown'}): ${errObj.error.message}`;
+                             } else if (errObj && errObj.error) {
+                                 displayMessage = `API Error: ${errObj.error}`;
+                             }
+                         }
+                     } catch (e) { /* Ignore parsing error, use original message */ }
+                 }
+
+
+                // Display message safely (escape if not HTML, otherwise render)
+                if (displayMessage.trim().startsWith('<')) {
+                    resultsDiv.innerHTML = displayMessage; // Render safety message from API
+                } else {
+                    resultsDiv.innerHTML = `<p class="text-red-400">${escapeHTML(displayMessage)}</p>`;
+                }
+
                 resultsDiv.classList.remove('hidden');
                 getRecsBtn.disabled = false;
-                if(getRecsBtn.querySelector('span')) {
+                if (getRecsBtn.querySelector('span')) {
                     getRecsBtn.querySelector('span').textContent = "Analyze Site";
                 }
             }
@@ -1297,7 +1426,6 @@
             // --- Function to trigger analysis (for button click and Enter key) ---
             async function triggerAnalysis() {
                 let url = urlInput.value; // Use let to modify
-                // REMOVED hardcoded API key
                 
                 // --- Validation ---
                 if (!url) {
@@ -1312,17 +1440,13 @@
                 }
                 
                 // Construct API URL for the serverless function
-                const serverlessApiUrl = '/api/call-gemini'; // <-- UPDATED Endpoint
+                 const serverlessApiUrl = `${window.location.origin}/api/call-gemini`; 
 
                 // Show loader, hide old results
-                loader.classList.remove('hidden');
                 resultsDiv.classList.add('hidden');
                 resultsDiv.innerHTML = ""; // Clear old results
+                startLoadingAnimation(); // Start the new loading animation
                 getRecsBtn.disabled = true;
-                // --- Update text in span ---
-                if(getRecsBtn.querySelector('span')) {
-                    getRecsBtn.querySelector('span').textContent = "Analyzing...";
-                }
 
                 // --- Prompt for the model ---
                 const schemaString = JSON.stringify(recommendationSchema, null, 2);
@@ -1341,33 +1465,40 @@
 
                 try {
                     // --- Payload for the serverless function ---
-                    const payload = {
-                        prompt: prompt 
-                        // Optionally add modelName here if you want to override the default in the serverless function
-                    };
+                    const payload = { prompt: prompt };
 
-                    const response = await fetch(serverlessApiUrl, { // <-- UPDATED Endpoint
+                    const response = await fetch(serverlessApiUrl, { 
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
                     });
 
-                    // Get the response body regardless of status
-                    const result = await response.json(); 
-
+                    // --- Improved Error Handling ---
                     if (!response.ok) {
-                        // Use the error message from the serverless function response
-                        const errorMessage = result.error || `API call failed with status ${response.status}`;
-                         // Re-throw to be caught by the outer catch block
-                        throw new Error(errorMessage);
+                        const contentType = response.headers.get("content-type");
+                        let errorBody;
+                        // If HTML is returned, it's likely a Vercel error page
+                        if (contentType && contentType.indexOf("text/html") !== -1) {
+                            errorBody = `Received HTML error page (Status: ${response.status}). Check serverless function logs.`;
+                        } else {
+                            // Try to parse as JSON, otherwise get text
+                            try {
+                                const errResult = await response.json();
+                                errorBody = errResult.error ? (typeof errResult.error === 'object' ? JSON.stringify(errResult.error) : errResult.error) : `API call failed with status ${response.status}`;
+                            } catch (e) {
+                                errorBody = await response.text() || `API call failed with status ${response.status}`;
+                            }
+                        }
+                         throw new Error(errorBody); // Let showAnalyzerError handle it
                     }
 
                     // --- Process successful response ---
+                    const result = await response.json(); // Now we know it's likely JSON
                     const candidate = result.candidates?.[0];
 
-                     // Check if serverless function returned a safety error message directly
-                    if (result.text && result.text.includes("blocked for safety") || result.text && result.text.includes("request was blocked")) {
-                        throw new Error(result.text); // Let the error handler display the specific message
+                     // Check for safety messages passed through JSON
+                    if (result.text && (result.text.includes("blocked for safety") || result.text.includes("request was blocked"))) {
+                        throw new Error(result.text); 
                     }
 
 
@@ -1460,13 +1591,14 @@
 
                 } catch (error) {
                     // Catch errors from fetch itself or errors thrown from response processing
-                    showAnalyzerError(error.message);
+                    showAnalyzerError(error.message, error.status); // Pass status if available
                 } finally {
                     // Hide loader, show results
-                    loader.classList.add('hidden');
+                    stopLoadingAnimation(); // Stop typing animation
+                    // loaderContainer.classList.add('hidden'); // Already hidden by stopLoadingAnimation
                     resultsDiv.classList.remove('hidden');
                     getRecsBtn.disabled = false;
-                    // --- Update text in span ---
+                    // --- Restore original button text ---
                     if(getRecsBtn.querySelector('span')) {
                         getRecsBtn.querySelector('span').textContent = "Analyze Site";
                     }
@@ -1591,7 +1723,8 @@
 
                     // --- Send to Serverless Function ---
                     try {
-                        const response = await fetch('/api/send-email', { // <-- UPDATED Endpoint
+                         // FIX: Use window.location.origin for absolute path
+                        const response = await fetch(`${window.location.origin}/api/send-email`, { 
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -1599,11 +1732,17 @@
                             body: JSON.stringify(formProps),
                         });
 
-                        const result = await response.json();
-
+                         // --- Improved Error Handling for Contact Form ---
                         if (!response.ok) {
-                            // Use error from serverless function response if available
-                           throw new Error(result.error || `Failed to send message (Status: ${response.status})`);
+                             let errorBody = `Failed to send message (Status: ${response.status})`;
+                             try {
+                                const errResult = await response.json();
+                                errorBody = errResult.error || errorBody;
+                             } catch (e) {
+                                // If parsing fails, use the status text or default message
+                                errorBody = response.statusText || errorBody;
+                             }
+                           throw new Error(errorBody);
                         }
                         
                         // --- Handle Success ---
@@ -1640,25 +1779,16 @@
                 });
             }
             
-            // --- Init Canvases and Start Animations ---
-             initCanvases();
-             if (heroCtx) heroLoop();
-             if (advantageCtx) advantageLoop();
+            // --- Init Effects and Start Animations ---
+             initEffects(); // Renamed function
              
              // Initial highlight for any static code if needed (optional)
              if (typeof hljs !== 'undefined') {
                 hljs.highlightAll();
             }
 
-
         });
     </script>
 </body>
 </html>
-
-
-
-
-
-
 
