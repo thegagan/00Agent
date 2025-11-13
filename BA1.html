@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Analysis: www.metronome.com</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Chosen Palette: Warm Neutrals -->
+    
+    <!-- Application Structure Plan: I've designed this SPA using a tabbed navigation with three main sections: 'Overview', 'Challenges & KPIs', and 'Optimization Plan'. This structure was chosen over a linear report format to allow users to non-linearly explore the analysis based on their interests. The 'Overview' tab provides high-level context (What is Metronome?). The 'Challenges & KPIs' tab connects the problem (Industry Challenges) with the success metrics (KPIs), using a chart to visualize the core business funnel. The 'Optimization Plan' tab is the most interactive, presenting the key UI elements for experimentation as clickable cards. Clicking a card dynamically displays the detailed analysis (hypothesis, business impact), making the core recommendations of the report engaging and easy to digest. This user flow directly supports the goal of understanding the 'why' behind the analysis and the 'how' of the proposed optimizations. -->
+    
+    <!-- Visualization & Content Choices: 
+    1. Report Info: High-Level KPIs Table -> Goal: Inform/Organize -> Viz/Presentation: Styled HTML <table> -> Interaction: None (static for clarity) -> Justification: Directly presents the structured data from the report. -> Library/Method: HTML/Tailwind.
+    2. Report Info: Implied Business-to-Website Funnel (from KPI & Element Analysis) -> Goal: Show Relationships/Inform -> Viz/Presentation: Horizontal Bar Chart (Funnel) -> Interaction: Tooltips on hover -> Justification: Visually connects the high-level Business KPI (ARR) to the tactical Website KPI (MQLs), which is the central argument of the report. -> Library/Method: Chart.js (Canvas).
+    3. Report Info: Website Element Analysis (4 Key UI Elements) -> Goal: Organize/Allow Exploration -> Viz/Presentation: Grid of 4 clickable cards (e.g., 'Primary CTAs', 'Hero H1'). -> Interaction: On-click event dynamically updates a 'Details' <div> with the analysis for the selected element. -> Justification: This interactive drill-down is more engaging than a static list and allows the user to focus on one optimization area at a time. -> Library/Method: Vanilla JS (DOM manipulation) + HTML/Tailwind.
+    -->
+    
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FFFFFF; /* Changed to white */
+        }
+        .tab-active {
+            border-bottom-color: #4F46E5; /* Metronome Indigo */
+            color: #4F46E5;
+            font-weight: 600;
+        }
+        .tab-inactive {
+            color: #4B5563; /* Darker gray */
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content-active {
+            display: block;
+        }
+        .card {
+            background-color: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            transition: all 0.2s ease-in-out;
+        }
+        .card-clickable {
+            cursor: pointer;
+        }
+        .card-clickable:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .card-clickable-active {
+            border-color: #4F46E5; /* Metronome Indigo */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transform: translateY(-2px);
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        .tag {
+            background-color: #E0E7FF; /* Metronome Indigo Light */
+            color: #4338CA; /* Metronome Indigo Dark */
+            border-radius: 9999px;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body class="antialiased text-gray-900">
+
+    <div class="container mx-auto px-4 py-8 md:py-12 max-w-7xl">
+        
+        <header class="pb-8 md:pb-12">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900">Business Analysis</h1>
+            <p class="text-xl md:text-2xl text-gray-600">www.metronome.com</p>
+        </header>
+
+        <div id="sticky-nav-wrapper" class="sticky top-0 z-40 bg-white border-b border-gray-200 -mx-4 px-4">
+            <nav class="container mx-auto">
+                <ul class="flex flex-wrap -mb-px">
+                    <li class="mr-2">
+                        <button class="tab-button inline-block py-4 px-1 md:px-4 text-lg tab-active" data-tab="overview">Overview</button>
+                    </li>
+                    <li class="mr-2">
+                        <button class="tab-button inline-block py-4 px-1 md:px-4 text-lg tab-inactive" data-tab="kpis">Challenges & KPIs</button>
+                    </li>
+                    <li class="mr-2">
+                        <button class="tab-button inline-block py-4 px-1 md:px-4 text-lg tab-inactive" data-tab="optimization">Optimization Plan</button>
+                    </li>
+                    <li class="mr-2">
+                        <button class="tab-button inline-block py-4 px-1 md:px-4 text-lg tab-inactive" data-tab="brand">Brand Reflection</button>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+        <main class="mt-8">
+            <div id="overview" class="tab-content tab-content-active">
+                <p class="text-lg text-gray-700 mb-8">This section provides a high-level summary of Metronome's business, its market position, and core offerings. It's designed to give you a quick understanding of who they are and what they do.</p>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    <div class="card p-6 lg:col-span-2">
+                        <h2 class="text-2xl font-semibold text-gray-900 mb-4">Business Summary</h2>
+                        <p class="text-gray-700 leading-relaxed">
+                            Metronome is a B2B SaaS company offering a usage-based billing platform. It enables modern SaaS businesses (especially in AI, infrastructure, and API-first sectors) to implement complex, consumption-based pricing models. The platform ingests real-time usage data, automates billing and invoicing, manages pricing changes without engineering effort, and provides financial analytics. Metronome positions itself as the "buy" solution to the complex "build vs. buy" problem of creating a scalable, in-house billing system for usage-based models, targeting companies that have outgrown traditional seat-based subscription platforms.
+                        </p>
+                    </div>
+
+                    <div class="card p-6">
+                        <h2 class="text-2xl font-semibold text-gray-900 mb-4">Market Summary</h2>
+                        <p class="text-gray-700 leading-relaxed mb-4">
+                            Metronome operates in the rapidly growing Consumption-Based Billing and Usage-Based Pricing (UBP) market. This market is driven by a macro trend in SaaS, where companies are shifting from flat-rate subscriptions to pricing models that align value delivered with the price charged.
+                        </p>
+                        <p class="text-gray-700 leading-relaxed">
+                            The target audience is typically product, engineering, and finance leaders at mid-market to enterprise SaaS companies.
+                        </p>
+                    </div>
+
+                    <div class="card p-6 lg:col-span-3">
+                        <h2 class="text-2xl font-semibold text-gray-900 mb-4">Category / Tags</h2>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="tag">SaaS</span>
+                            <span class="tag">FinTech</span>
+                            <span class="tag">B2B</span>
+                            <span class="tag">Usage-Based Billing</span>
+                            <span class="tag">Consumption-Based Pricing</span>
+                            <span class="tag">Billing Automation</span>
+                            <span class="tag">API-First</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="kpis" class="tab-content">
+                <p class="text-lg text-gray-700 mb-8">This section connects the core problems Metronome solves (Industry Challenges) with how they and their customers measure success (High-Level KPIs). The chart below visualizes the key business funnel, showing how website performance directly impacts high-level business goals.</p>
+                
+                <div class="card p-6 mb-8">
+                    <h2 class="text-2xl font-semibold text-gray-900 mb-4">Business Funnel Visualization</h2>
+                    <p class="text-gray-600 mb-4 text-center">Connecting Website KPIs to Business KPIs</p>
+                    <div class="chart-container">
+                        <canvas id="kpiFunnelChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="card p-6">
+                        <h2 class="text-2xl font-semibold text-gray-900 mb-4">Common Industry Challenges</h2>
+                        <ul class="list-disc list-outside pl-5 space-y-3 text-gray-700">
+                            <li>
+                                <strong class="text-gray-800">Engineering Bottleneck:</strong> Pricing and billing changes require significant engineering resources, slowing go-to-market.
+                            </li>
+                            <li>
+                                <strong class="text-gray-800">In-House Complexity:</strong> Building a reliable, scalable, and auditable usage-based billing system internally is extremely difficult and costly.
+                            </li>
+                            <li>
+                                <strong class="text-gray-800">Data Ingestion:</strong> Aggregating and processing high volumes of real-time usage data is a major data engineering challenge.
+                            </li>
+                            <li>
+                                <strong class="text-gray-800">Revenue Leakage:</strong> Inaccurate billing, failed credit calculations, or inability to bill for all usage results in lost revenue.
+                            </li>
+                            <li>
+                                <strong class="text-gray-800">Finance & Ops Inefficiency:</strong> Finance teams spend days manually reconciling usage data and invoices for end-of-month financial close.
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="card p-6">
+                        <h2 class="text-2xl font-semibold text-gray-900 mb-4">High-Level KPIs & Website Goals</h2>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left">
+                                <thead class="border-b border-gray-200">
+                                    <tr>
+                                        <th class="py-3 pr-3 font-semibold text-gray-600">Category</th>
+                                        <th class="py-3 pr-3 font-semibold text-gray-600">Goal / KPI</th>
+                                        <th class="py-3 pr-3 font-semibold text-gray-600">Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    <tr class="align-top">
+                                        <td class="py-3 pr-3 font-medium text-gray-800">Business</td>
+                                        <td class="py-3 pr-3 text-gray-700">Increase ARR</td>
+                                        <td class="py-3 pr-3 text-gray-700">Primary indicator of company growth.</td>
+                                    </tr>
+                                    <tr class="align-top">
+                                        <td class="py-3 pr-3 font-medium text-gray-800">Business</td>
+                                        <td class="py-3 pr-3 text-gray-700">Improve NRR</td>
+                                        <td class="py-3 pr-3 text-gray-700">Key SaaS metric; UBP helps companies grow *with* their customers.</td>
+                                    </tr>
+                                    <tr class="align-top">
+                                        <td class="py-3 pr-3 font-medium text-gray-800">Business</td>
+                                        <td class="py-3 pr-3 text-gray-700">Reduce CAC</td>
+                                        <td class="py-3 pr-3 text-gray-700">Increase marketing and sales efficiency.</td>
+                                    </tr>
+                                    <tr class="align-top">
+                                        <td class="py-3 pr-3 font-medium text-gray-800">Website</td>
+                                        <td class="py-3 pr-3 text-gray-700">Increase MQL Conversion Rate</td>
+                                        <td class="py-3 pr-3 text-gray-700">Primary website goal (via "Get a Demo" form).</td>
+                                    </tr>
+                                    <tr class="align-top">
+                                        <td class="py-3 pr-3 font-medium text-gray-800">Website</td>
+                                        <td class="py-3 pr-3 text-gray-700">Increase Lead Qualification</td>
+                                        <td class="py-3 pr-3 text-gray-700">Attract the *right* kind of leads through clear messaging.</td>
+                                    </tr>
+                                    <tr class="align-top">
+                                        <td class="py-3 pr-3 font-medium text-gray-800">Website</td>
+                                        <td class="py-3 pr-3 text-gray-700">Educate Market</td>
+                                        <td class="py-3 pr-3 text-gray-700">Establish thought leadership (blog, docs, etc.).</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="optimization" class="tab-content">
+                <p class="text-lg text-gray-700 mb-8">This is an interactive plan outlining the key website UI elements to experiment on. The goal is to optimize the website's conversion funnel, which directly impacts business KPIs. Click on any element below to see the detailed analysis, experimentation hypothesis, and potential business impact.</p>
+                
+                <div class="text-center mb-8 p-4 bg-gray-50 rounded-lg">
+                    <h3 class="text-xl font-semibold text-gray-800">Core Funnel:</h3>
+                    <p class="text-lg text-gray-700">
+                        <span class="font-medium">Business Goal (Increase ARR)</span> 
+                        <span class="text-gray-500 mx-1">&larr;</span> 
+                        <span class="font-medium">Sales Goal (More Pipeline)</span>
+                        <span class="text-gray-500 mx-1">&larr;</span> 
+                        <span class="font-medium text-indigo-600">Website Goal (Increase MQLs)</span>
+                    </p>
+                </div>
+
+                <h2 class="text-2xl font-semibold text-gray-900 mb-6 text-center">Key UI Elements for Experimentation</h2>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div id="opt-card-cta" class="card card-clickable p-6 text-center" data-opt="cta">
+                        <div class="text-4xl mb-3">👆</div>
+                        <h3 class="text-xl font-semibold text-gray-900">Primary CTAs</h3>
+                        <p class="text-gray-600">"Get a demo", "Talk to sales"</p>
+                    </div>
+                    <div id="opt-card-hero" class="card card-clickable p-6 text-center" data-opt="hero">
+                        <div class="text-4xl mb-3">📰</div>
+                        <h3 class="text-xl font-semibold text-gray-900">Hero Value Prop</h3>
+                        <p class="text-gray-600">H1 & Sub-heading</p>
+                    </div>
+                    <div id="opt-card-social" class="card card-clickable p-6 text-center" data-opt="social">
+                        <div class="text-4xl mb-3">🌟</div>
+                        <h3 class="text-xl font-semibold text-gray-900">Social Proof</h3>
+                        <p class="text-gray-600">Logos & Case Studies</p>
+                    </div>
+                    <div id="opt-card-form" class="card card-clickable p-6 text-center" data-opt="form">
+                        <div class="text-4xl mb-3">📋</div>
+                        <h3 class="text-xl font-semibold text-gray-900">"Get a Demo" Form</h3>
+                        <p class="text-gray-600">Fields & Layout</p>
+                    </div>
+                </div>
+
+                <div id="optimization-details" class="card p-6 md:p-8" style="display: none;">
+                    <h3 id="opt-title" class="text-2xl md:text-3xl font-semibold text-gray-900 mb-6"></h3>
+                    <div class="space-y-6">
+                        <div>
+                            <h4 class="text-lg font-semibold text-gray-800 mb-2">Key Elements</h4>
+                            <p id="opt-elements" class="text-gray-700 leading-relaxed"></p>
+                        </div>
+                        <div class="border-t border-gray-200 pt-6">
+                            <h4 class="text-lg font-semibold text-gray-800 mb-2">KPI Connection</h4>
+                            <p id="opt-kpi" class="text-gray-700 leading-relaxed"></p>
+                        </div>
+                        <div class="border-t border-gray-200 pt-6">
+                            <h4 class="text-lg font-semibold text-gray-800 mb-2">Hypothesis for Experimentation</h4>
+                            <p id="opt-hypothesis" class="text-gray-700 leading-relaxed"></p>
+                        </div>
+                        <div class="border-t border-gray-200 pt-6 bg-indigo-50 p-4 rounded-lg">
+                            <h4 class="text-lg font-semibold text-indigo-800 mb-2">Business Impact</h4>
+                            <p id="opt-impact" class="text-indigo-700 leading-relaxed"></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="optimization-placeholder" class="text-center p-10 border-2 border-dashed border-gray-300 rounded-lg">
+                    <p class="text-lg text-gray-500">Click an element above to see the detailed optimization plan.</p>
+                </div>
+
+            </div>
+
+            <div id="brand" class="tab-content">
+                <p class="text-lg text-gray-700 mb-8">This section reflects on the core brand identity presented by www.metronome.com. The brand's feeling and tone are crucial for building trust with their target B2B audience (engineers, product managers, and finance leaders).</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    
+                    <div class="card p-6">
+                        <h2 class="text-2xl font-semibold text-gray-900 mb-4">Tone of Voice</h2>
+                        <p class="text-gray-700 leading-relaxed">
+                            The tone is confident, expert, and direct. It speaks to a technical and business-savvy audience without being overly verbose. Language like "modern SaaS," "ingests real-time data," and "engineering bottleneck" shows they understand their customer's world deeply. It's reassuringly intelligent and built for builders.
+                        </p>
+                    </div>
+
+                    <div class="card p-6">
+                        <h2 class="text-2xl font-semibold text-gray-900 mb-4">Color Palette & Themes</h2>
+                        <p class="text-gray-700 leading-relaxed mb-4">
+                            The palette is clean and professional. It's built on a foundation of clean white, deep black/gray text for high readability, and a strong primary accent of <span class="font-medium" style="color: #4F46E5;">indigo/purple</span>.
+                        </p>
+                        <p class="text-gray-700 leading-relaxed">
+                            This indigo is used strategically for CTAs, links, and highlights, associating it with action and intelligence. It's supported by light lavender/indigo backgrounds (like the tags) for a cohesive, tech-forward feel.
+                        </p>
+                    </div>
+                    
+                    <div class="card p-6 md:col-span-2 lg:col-span-1">
+                        <h2 class="text-2xl font-semibold text-gray-900 mb-4">Overall Feeling</h2>
+                        <p class="text-gray-700 leading-relaxed">
+                            The brand feels like a modern, reliable, and high-precision tool. The name "Metronome" itself evokes reliability, rhythm, and accuracy—all critical for a billing platform. The clean design, ample white space, and sharp typography make the brand feel trustworthy, scalable, and engineered, not just "designed." It feels less like a flashy startup and more like a core piece of infrastructure.
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            
+            const tabs = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function () {
+                    const tabName = this.dataset.tab;
+
+                    tabs.forEach(t => {
+                        t.classList.remove('tab-active');
+                        t.classList.add('tab-inactive');
+                    });
+                    this.classList.add('tab-active');
+                    this.classList.remove('tab-inactive');
+                    
+                    tabContents.forEach(content => {
+                        if (content.id === tabName) {
+                            content.classList.add('tab-content-active');
+                        } else {
+                            content.classList.remove('tab-content-active');
+                        }
+                    });
+
+                    if (tabName === 'kpis' && !kpiChart) {
+                        renderKpiChart();
+                    }
+                });
+            });
+
+            const optimizationData = {
+                cta: {
+                    title: "1. Primary Call-to-Action (CTA) Buttons",
+                    elements: "<a> tags or <button> elements with text like 'Get a demo', 'Talk to sales', 'See it in action'. Located in the hero section and sticky navigation.",
+                    kpi: "This is the most direct link to the MQL Conversion Rate.",
+                    hypothesis: "Changing the CTA text from the generic 'Get a demo' to a more value-driven 'See how [Customer Name] bills' or 'Plan your pricing model' will increase clicks to the demo form.",
+                    impact: "A 1% increase in CTA click-through rate (CTR) can lead to a significant increase in MQLs and, subsequently, sales pipeline and ARR."
+                },
+                hero: {
+                    title: "2. Hero Section Value Proposition",
+                    elements: "<h1> (e.g., 'Usage-based billing for modern SaaS') and sub-heading <p> tag.",
+                    kpi: "This is the first thing a user sees. It must quickly qualify the visitor and communicate value.",
+                    hypothesis: "A/B testing the H1 text to be more pain-point-focused (e.g., 'Stop building billing. Start shipping product.') will resonate better with the target (engineering) audience, reducing bounce rate and increasing demo requests.",
+                    impact: "Clearly articulating the value prop to the *right* audience increases lead *quality*, reducing CAC by filtering out poor-fit leads."
+                },
+                social: {
+                    title: "3. Social Proof (Customer Logos & Case Studies)",
+                    elements: "<img> tags for logos (OpenAI, Notion, etc.); <div> blocks linking to case studies.",
+                    kpi: "Builds trust and credibility, which are essential for a high-value B2B product.",
+                    hypothesis: "Making customer logos more prominent (e.g., moving them higher 'above the fold' or adding a 'Trusted by...'-carousel) will increase user confidence and conversions.",
+                    impact: "Demonstrating that market leaders trust Metronome de-risks the purchasing decision for new prospects, shortening the sales cycle."
+                },
+                form: {
+                    title: "4. 'Get a Demo' Form Page",
+                    elements: "The <form> itself, including <input> fields (e.g., Name, Work Email, Company, Role) and the final submit <button>.",
+                    kpi: "This is the final conversion point. Form abandonment is a major leak in the funnel.",
+                    hypothesis: "Reducing the number of form fields from 5 to 3 will increase the form completion rate.",
+                    impact: "Directly increases the MQL Conversion Rate. A 10% reduction in form abandonment (by removing friction) translates directly to 10% more MQLs from the same amount of traffic."
+                }
+            };
+            
+            const optCards = document.querySelectorAll('.card-clickable');
+            const optDetails = document.getElementById('optimization-details');
+            const optPlaceholder = document.getElementById('optimization-placeholder');
+            
+            const optTitle = document.getElementById('opt-title');
+            const optElements = document.getElementById('opt-elements');
+            const optKpi = document.getElementById('opt-kpi');
+            const optHypothesis = document.getElementById('opt-hypothesis');
+            const optImpact = document.getElementById('opt-impact');
+            
+            optCards.forEach(card => {
+                card.addEventListener('click', function () {
+                    const optName = this.dataset.opt;
+                    const data = optimizationData[optName];
+                    
+                    optCards.forEach(c => c.classList.remove('card-clickable-active'));
+                    this.classList.add('card-clickable-active');
+                    
+                    optTitle.textContent = data.title;
+                    optElements.textContent = data.elements;
+                    optKpi.textContent = data.kpi;
+                    optHypothesis.textContent = data.hypothesis;
+                    optImpact.textContent = data.impact;
+                    
+                    optPlaceholder.style.display = 'none';
+                    optDetails.style.display = 'block';
+                });
+            });
+
+            let kpiChart = null;
+            function renderKpiChart() {
+                if (kpiChart) {
+                    return; 
+                }
+                const ctx = document.getElementById('kpiFunnelChart').getContext('2d');
+                
+                const labels = [
+                    'Business Goal: Increase ARR', 
+                    'Sales Goal: More Pipeline', 
+                    'Website Goal: Increase MQLs', 
+                    'Website Traffic'
+                ];
+                const data = [10, 40, 70, 100];
+
+                kpiChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Relative Scale of Funnel',
+                            data: data,
+                            backgroundColor: [
+                                'rgba(67, 56, 202, 0.7)',  /* Indigo 700 */
+                                'rgba(79, 70, 229, 0.7)',  /* Indigo 600 */
+                                'rgba(99, 102, 241, 0.7)', /* Indigo 500 */
+                                'rgba(156, 163, 175, 0.7)' /* Gray 400 */
+                            ],
+                            borderColor: [
+                                'rgba(67, 56, 202, 1)',
+                                'rgba(79, 70, 229, 1)',
+                                'rgba(99, 102, 241, 1)',
+                                'rgba(156, 163, 175, 1)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                ticks: {
+                                    display: false
+                                },
+                                grid: {
+                                    display: false,
+                                    drawBorder: false
+                                }
+                            },
+                            y: {
+                                grid: {
+                                    display: false,
+                                    drawBorder: false
+                                },
+                                ticks: {
+                                    font: {
+                                        size: 14,
+                                        weight: 500
+                                    },
+                                    color: '#1F2937', /* Gray 800 */
+                                    autoSkip: false,
+                                    maxRotation: 0,
+                                    minRotation: 0,
+                                    callback: function(value) {
+                                        const label = this.getLabelForValue(value);
+                                        if (label.length > 25) {
+                                            return label.substring(0, 25) + '...';
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                enabled: true,
+                                intersect: false,
+                                mode: 'index',
+                                callbacks: {
+                                    label: function(context) {
+                                        return ` Relative Value: ${context.raw}`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
