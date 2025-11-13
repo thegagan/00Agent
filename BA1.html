@@ -13,8 +13,8 @@
     <!-- Application Structure Plan: I've designed this SPA using a tabbed navigation with three main sections: 'Overview', 'Challenges & KPIs', and 'Optimization Plan'. This structure was chosen over a linear report format to allow users to non-linearly explore the analysis based on their interests. The 'Overview' tab provides high-level context (What is Metronome?). The 'Challenges & KPIs' tab connects the problem (Industry Challenges) with the success metrics (KPIs), using a chart to visualize the core business funnel. The 'Optimization Plan' tab is the most interactive, presenting the key UI elements for experimentation as clickable cards. Clicking a card dynamically displays the detailed analysis (hypothesis, business impact), making the core recommendations of the report engaging and easy to digest. This user flow directly supports the goal of understanding the 'why' behind the analysis and the 'how' of the proposed optimizations. -->
     
     <!-- Visualization & Content Choices: 
-    1. Report Info: High-Level KPIs Table -> Goal: Inform/Organize -> Viz/Presentation: Styled HTML <table> -> Interaction: None (static for clarity) -> Justification: Directly presents the structured data from the report. -> Library/Method: HTML/Tailwind.
-    2. Report Info: Implied Business-to-Website Funnel (from KPI & Element Analysis) -> Goal: Show Relationships/Inform -> Viz/Presentation: Horizontal Bar Chart (Funnel) -> Interaction: Tooltips on hover -> Justification: Visually connects the high-level Business KPI (ARR) to the tactical Website KPI (MQLs), which is the central argument of the report. -> Library/Method: Chart.js (Canvas).
+    1. Report Info: High-Level KPIs Table -> Goal: Inform/Organize -> Viz/Presentation: Styled HTML <table> -> Interaction: Add/Remove/Edit rows -> Justification: Allows full customization of the KPI list. -> Library/Method: Vanilla JS (DOM) + HTML/Tailwind.
+    2. Report Info: Implied Business Funnel -> Goal: Show Relationships/Prioritize -> Viz/Presentation: Draggable List -> Interaction: Drag-and-drop re-ordering -> Justification: Replaces static chart with an interactive tool for prioritizing funnel stages. -> Library/Method: Vanilla JS (Drag/Drop API).
     3. Report Info: Website Element Analysis (4 Key UI Elements) -> Goal: Organize/Allow Exploration -> Viz/Presentation: Grid of 4 clickable cards (e.g., 'Primary CTAs', 'Hero H1'). -> Interaction: On-click event dynamically updates a 'Details' <div> with the analysis for the selected element. -> Justification: This interactive drill-down is more engaging than a static list and allows the user to focus on one optimization area at a time. -> Library/Method: Vanilla JS (DOM manipulation) + HTML/Tailwind.
     -->
     
@@ -58,15 +58,6 @@
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             transform: translateY(-2px);
         }
-        .chart-container {
-            position: relative;
-            width: 100%;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
-            height: 350px;
-            max-height: 400px;
-        }
         .tag {
             background-color: #E0E7FF; /* Metronome Indigo Light */
             color: #4338CA; /* Metronome Indigo Dark */
@@ -74,6 +65,82 @@
             padding: 0.25rem 0.75rem;
             font-size: 0.875rem;
             font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+        }
+        .tag-remove {
+            margin-left: 0.5rem;
+            width: 1rem;
+            height: 1rem;
+            border-radius: 50%;
+            background-color: #4338CA;
+            color: #E0E7FF;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .tag-remove:hover {
+            background-color: #312E81;
+        }
+        .tag-input {
+            border: 2px solid transparent;
+            border-bottom-color: #C7D2FE;
+            background-color: #F9FAFB;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            transition: all 0.2s;
+        }
+        .tag-input:focus {
+            outline: none;
+            border-color: #4F46E5;
+            background-color: #FFFFFF;
+        }
+
+        .draggable-list {
+            list-style: none;
+            padding: 0;
+        }
+        .draggable-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.5rem;
+            background-color: #F9FAFB;
+            border: 1px solid #E5E7EB;
+            border-radius: 0.5rem;
+            cursor: move;
+            transition: background-color 0.2s, box-shadow 0.2s;
+        }
+        .draggable-item:hover {
+            background-color: #F3F4F6;
+        }
+        .draggable-item.dragging {
+            opacity: 0.5;
+            background-color: #E0E7FF;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .drag-handle {
+            margin-right: 1rem;
+            color: #9CA3AF;
+            font-size: 1.25rem;
+            line-height: 1;
+        }
+        
+        [contenteditable="true"] {
+            outline: 2px solid transparent;
+            outline-offset: 2px;
+            transition: outline 0.2s ease-in-out;
+            cursor: text;
+        }
+        [contenteditable="true"]:hover,
+        [contenteditable="true"]:focus {
+            outline: 2px solid #C7D2FE; /* Indigo 200 */
+            background-color: #EEF2FF; /* Indigo 50 */
+            border-radius: 0.25rem;
         }
     </style>
 </head>
@@ -96,10 +163,10 @@
                         <button class="tab-button inline-block py-4 px-1 md:px-4 text-lg tab-inactive" data-tab="kpis">Challenges & KPIs</button>
                     </li>
                     <li class="mr-2">
-                        <button class="tab-button inline-block py-4 px-1 md:px-4 text-lg tab-inactive" data-tab="optimization">Optimization Plan</button>
+                        <button class="tab-button inline-block py-4 px-1 md:px-4 text-lg tab-inactive" data-tab="brand">Brand Reflection</button>
                     </li>
                     <li class="mr-2">
-                        <button class="tab-button inline-block py-4 px-1 md:px-4 text-lg tab-inactive" data-tab="brand">Brand Reflection</button>
+                        <button class="tab-button inline-block py-4 px-1 md:px-4 text-lg tab-inactive" data-tab="optimization">Optimization Plan</button>
                     </li>
                 </ul>
             </nav>
@@ -107,7 +174,7 @@
 
         <main class="mt-8">
             <div id="overview" class="tab-content tab-content-active">
-                <p class="text-lg text-gray-700 mb-8">This section provides a high-level summary of Metronome's business, its market position, and core offerings. It's designed to give you a quick understanding of who they are and what they do.</p>
+                <p id="overview-intro" class="text-lg text-gray-700 mb-8">This section provides a high-level summary of Metronome's business, its market position, and core offerings. It's designed to give you a quick understanding of who they are and what they do.</p>
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     
                     <div class="card p-6 lg:col-span-2">
@@ -129,28 +196,76 @@
 
                     <div class="card p-6 lg:col-span-3">
                         <h2 class="text-2xl font-semibold text-gray-900 mb-4">Category / Tags</h2>
-                        <div class="flex flex-wrap gap-2">
-                            <span class="tag">SaaS</span>
-                            <span class="tag">FinTech</span>
-                            <span class="tag">B2B</span>
-                            <span class="tag">Usage-Based Billing</span>
-                            <span class="tag">Consumption-Based Pricing</span>
-                            <span class="tag">Billing Automation</span>
-                            <span class="tag">API-First</span>
+                        <div id="tag-container" class="flex flex-wrap gap-2">
+                            <span class="tag" data-tag="SaaS">SaaS<span class="tag-remove">&times;</span></span>
+                            <span class="tag" data-tag="FinTech">FinTech<span class="tag-remove">&times;</span></span>
+                            <span class="tag" data-tag="B2B">B2B<span class="tag-remove">&times;</span></span>
+                            <span class="tag" data-tag="Usage-Based Billing">Usage-Based Billing<span class="tag-remove">&times;</span></span>
+                            <span class="tag" data-tag="Consumption-Based Pricing">Consumption-Based Pricing<span class="tag-remove">&times;</span></span>
+                            <span class="tag" data-tag="Billing Automation">Billing Automation<span class="tag-remove">&times;</span></span>
+                            <span class="tag" data-tag="API-First">API-First<span class="tag-remove">&times;</span></span>
                         </div>
+                        <input type="text" id="tag-input" class="tag-input mt-4" placeholder="Type new tag and press Enter...">
                     </div>
                 </div>
             </div>
 
             <div id="kpis" class="tab-content">
-                <p class="text-lg text-gray-700 mb-8">This section connects the core problems Metronome solves (Industry Challenges) with how they and their customers measure success (High-Level KPIs). The chart below visualizes the key business funnel, showing how website performance directly impacts high-level business goals.</p>
+                <p id="kpis-intro" class="text-lg text-gray-700 mb-8">This section connects the core problems Metronome solves (Industry Challenges) with how they and their customers measure success (High-Level KPIs). The list below visualizes the key business funnel, which you can re-order by priority.</p>
                 
                 <div class="card p-6 mb-8">
-                    <h2 class="text-2xl font-semibold text-gray-900 mb-4">Business Funnel Visualization</h2>
-                    <p class="text-gray-600 mb-4 text-center">Connecting Website KPIs to Business KPIs</p>
-                    <div class="chart-container">
-                        <canvas id="kpiFunnelChart"></canvas>
-                    </div>
+                    <h2 class="text-2xl font-semibold text-gray-900 mb-4">Business Funnel Priority</h2>
+                    <p class="text-gray-600 mb-4">Drag and drop to re-order. Top is highest priority.</p>
+                    <ul id="funnel-list" class="draggable-list">
+                        <li class="draggable-item" draggable="true">
+                            <span class="drag-handle">☰</span>
+                            <span class="text-2xl mr-3">💼</span>
+                            <div class="flex-1">
+                                <span class="block text-indigo-700 text-xs font-semibold">BUSINESS GOAL</span>
+                                <span class="text-gray-900">Increase ARR</span>
+                            </div>
+                        </li>
+                        <li class="draggable-item" draggable="true">
+                            <span class="drag-handle">☰</span>
+                            <span class="text-2xl mr-3">📈</span>
+                            <div class="flex-1">
+                                <span class="block text-indigo-700 text-xs font-semibold">SALES GOAL</span>
+                                <span class="text-gray-900">More Pipeline</span>
+                            </div>
+                        </li>
+                        <li class="draggable-item" draggable="true">
+                            <span class="drag-handle">☰</span>
+                            <span class="text-2xl mr-3">🖥️</span>
+                            <div class="flex-1">
+                                <span class="block text-blue-700 text-xs font-semibold">WEBSITE GOAL</span>
+                                <span class="text-gray-900">Increase MQLs</span>
+                            </div>
+                        </li>
+                        <li class="draggable-item" draggable="true">
+                            <span class="drag-handle">☰</span>
+                            <span class="text-2xl mr-3">🧠</span>
+                            <div class="flex-1">
+                                <span class="block text-blue-700 text-xs font-semibold">LEAD NURTURING</span>
+                                <span class="text-gray-900">Educate Market</span>
+                            </div>
+                        </li>
+                        <li class="draggable-item" draggable="true">
+                            <span class="drag-handle">☰</span>
+                            <span class="text-2xl mr-3">👥</span>
+                            <div class="flex-1">
+                                <span class="block text-gray-600 text-xs font-semibold">ACQUISITION</span>
+                                <span class="text-gray-900">Website Traffic</span>
+                            </div>
+                        </li>
+                        <li class="draggable-item" draggable="true">
+                            <span class="drag-handle">☰</span>
+                            <span class="text-2xl mr-3">🚀</span>
+                            <div class="flex-1">
+                                <span class="block text-green-700 text-xs font-semibold">CUSTOMER SUCCESS</span>
+                                <span class="text-gray-900">Reduce Time-to-Value</span>
+                            </div>
+                        </li>
+                    </ul>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -177,12 +292,13 @@
                     <div class="card p-6">
                         <h2 class="text-2xl font-semibold text-gray-900 mb-4">High-Level KPIs & Website Goals</h2>
                         <div class="overflow-x-auto">
-                            <table class="w-full text-left">
+                            <table id="kpi-table" class="w-full text-left">
                                 <thead class="border-b border-gray-200">
                                     <tr>
                                         <th class="py-3 pr-3 font-semibold text-gray-600">Category</th>
                                         <th class="py-3 pr-3 font-semibold text-gray-600">Goal / KPI</th>
                                         <th class="py-3 pr-3 font-semibold text-gray-600">Description</th>
+                                        <th class="py-3 pr-3 font-semibold text-gray-600 w-20">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-200">
@@ -190,41 +306,85 @@
                                         <td class="py-3 pr-3 font-medium text-gray-800">Business</td>
                                         <td class="py-3 pr-3 text-gray-700">Increase ARR</td>
                                         <td class="py-3 pr-3 text-gray-700">Primary indicator of company growth.</td>
+                                        <td class="py-3 pr-3 text-center"><button class="kpi-remove-row text-red-500 hover:text-red-700 text-xl font-bold">&times;</button></td>
                                     </tr>
                                     <tr class="align-top">
                                         <td class="py-3 pr-3 font-medium text-gray-800">Business</td>
                                         <td class="py-3 pr-3 text-gray-700">Improve NRR</td>
                                         <td class="py-3 pr-3 text-gray-700">Key SaaS metric; UBP helps companies grow *with* their customers.</td>
+                                        <td class="py-3 pr-3 text-center"><button class="kpi-remove-row text-red-500 hover:text-red-700 text-xl font-bold">&times;</button></td>
                                     </tr>
                                     <tr class="align-top">
                                         <td class="py-3 pr-3 font-medium text-gray-800">Business</td>
                                         <td class="py-3 pr-3 text-gray-700">Reduce CAC</td>
                                         <td class="py-3 pr-3 text-gray-700">Increase marketing and sales efficiency.</td>
+                                        <td class="py-3 pr-3 text-center"><button class="kpi-remove-row text-red-500 hover:text-red-700 text-xl font-bold">&times;</button></td>
                                     </tr>
                                     <tr class="align-top">
                                         <td class="py-3 pr-3 font-medium text-gray-800">Website</td>
                                         <td class="py-3 pr-3 text-gray-700">Increase MQL Conversion Rate</td>
                                         <td class="py-3 pr-3 text-gray-700">Primary website goal (via "Get a Demo" form).</td>
+                                        <td class="py-3 pr-3 text-center"><button class="kpi-remove-row text-red-500 hover:text-red-700 text-xl font-bold">&times;</button></td>
                                     </tr>
                                     <tr class="align-top">
                                         <td class="py-3 pr-3 font-medium text-gray-800">Website</td>
                                         <td class="py-3 pr-3 text-gray-700">Increase Lead Qualification</td>
                                         <td class="py-3 pr-3 text-gray-700">Attract the *right* kind of leads through clear messaging.</td>
+                                        <td class="py-3 pr-3 text-center"><button class="kpi-remove-row text-red-500 hover:text-red-700 text-xl font-bold">&times;</button></td>
                                     </tr>
                                     <tr class="align-top">
                                         <td class="py-3 pr-3 font-medium text-gray-800">Website</td>
                                         <td class="py-3 pr-3 text-gray-700">Educate Market</td>
                                         <td class="py-3 pr-3 text-gray-700">Establish thought leadership (blog, docs, etc.).</td>
+                                        <td class="py-3 pr-3 text-center"><button class="kpi-remove-row text-red-500 hover:text-red-700 text-xl font-bold">&times;</button></td>
                                     </tr>
                                 </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="4" class="pt-4">
+                                            <button id="kpi-add-row" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium">+ Add Row</button>
+                                        </td>
+                                    </tr>
+                                </tfoot>
                             </table>
                         </div>
                     </div>
                 </div>
             </div>
+            
+            <div id="brand" class="tab-content">
+                <p class="text-lg text-gray-700 mb-8">This section reflects on the core brand identity presented by www.metronome.com. The brand's feeling and tone are crucial for building trust with their target B2B audience (engineers, product managers, and finance leaders).</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    
+                    <div class="card p-6">
+                        <h2 class="text-2xl font-semibold text-gray-900 mb-4">Tone of Voice</h2>
+                        <p class="text-gray-700 leading-relaxed">
+                            The tone is confident, expert, and direct. It speaks to a technical and business-savvy audience without being overly verbose. Language like "modern SaaS," "ingests real-time data," and "engineering bottleneck" shows they understand their customer's world deeply. It's reassuringly intelligent and built for builders.
+                        </p>
+                    </div>
+
+                    <div class="card p-6">
+                        <h2 class="text-2xl font-semibold text-gray-900 mb-4">Color Palette & Themes</h2>
+                        <p class="text-gray-700 leading-relaxed mb-4">
+                            The palette is clean and professional. It's built on a foundation of clean white, deep black/gray text for high readability, and a strong primary accent of <span class="font-medium" style="color: #4F46E5;">indigo/purple</span>.
+                        </p>
+                        <p class="text-gray-700 leading-relaxed">
+                            This indigo is used strategically for CTAs, links, and highlights, associating it with action and intelligence. It's supported by light lavender/indigo backgrounds (like the tags) for a cohesive, tech-forward feel.
+                        </p>
+                    </div>
+                    
+                    <div class="card p-6 md:col-span-2 lg:col-span-1">
+                        <h2 class="text-2xl font-semibold text-gray-900 mb-4">Overall Feeling</h2>
+                        <p class="text-gray-700 leading-relaxed">
+                            The brand feels like a modern, reliable, and high-precision tool. The name "Metronome" itself evokes reliability, rhythm, and accuracy—all critical for a billing platform. The clean design, ample white space, and sharp typography make the brand feel trustworthy, scalable, and engineered, not just "designed." It feels less like a flashy startup and more like a core piece of infrastructure.
+                        </p>
+                    </div>
+
+                </div>
+            </div>
 
             <div id="optimization" class="tab-content">
-                <p class="text-lg text-gray-700 mb-8">This is an interactive plan outlining the key website UI elements to experiment on. The goal is to optimize the website's conversion funnel, which directly impacts business KPIs. Click on any element below to see the detailed analysis, experimentation hypothesis, and potential business impact.</p>
+                <p id="optimization-intro" class="text-lg text-gray-700 mb-8">This is an interactive plan outlining the key website UI elements to experiment on. The goal is to optimize the website's conversion funnel, which directly impacts business KPIs. Click on any element below to see the detailed analysis, experimentation hypothesis, and potential business impact.</p>
                 
                 <div class="text-center mb-8 p-4 bg-gray-50 rounded-lg">
                     <h3 class="text-xl font-semibold text-gray-800">Core Funnel:</h3>
@@ -290,38 +450,12 @@
 
             </div>
 
-            <div id="brand" class="tab-content">
-                <p class="text-lg text-gray-700 mb-8">This section reflects on the core brand identity presented by www.metronome.com. The brand's feeling and tone are crucial for building trust with their target B2B audience (engineers, product managers, and finance leaders).</p>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    
-                    <div class="card p-6">
-                        <h2 class="text-2xl font-semibold text-gray-900 mb-4">Tone of Voice</h2>
-                        <p class="text-gray-700 leading-relaxed">
-                            The tone is confident, expert, and direct. It speaks to a technical and business-savvy audience without being overly verbose. Language like "modern SaaS," "ingests real-time data," and "engineering bottleneck" shows they understand their customer's world deeply. It's reassuringly intelligent and built for builders.
-                        </p>
-                    </div>
-
-                    <div class="card p-6">
-                        <h2 class="text-2xl font-semibold text-gray-900 mb-4">Color Palette & Themes</h2>
-                        <p class="text-gray-700 leading-relaxed mb-4">
-                            The palette is clean and professional. It's built on a foundation of clean white, deep black/gray text for high readability, and a strong primary accent of <span class="font-medium" style="color: #4F46E5;">indigo/purple</span>.
-                        </p>
-                        <p class="text-gray-700 leading-relaxed">
-                            This indigo is used strategically for CTAs, links, and highlights, associating it with action and intelligence. It's supported by light lavender/indigo backgrounds (like the tags) for a cohesive, tech-forward feel.
-                        </p>
-                    </div>
-                    
-                    <div class="card p-6 md:col-span-2 lg:col-span-1">
-                        <h2 class="text-2xl font-semibold text-gray-900 mb-4">Overall Feeling</h2>
-                        <p class="text-gray-700 leading-relaxed">
-                            The brand feels like a modern, reliable, and high-precision tool. The name "Metronome" itself evokes reliability, rhythm, and accuracy—all critical for a billing platform. The clean design, ample white space, and sharp typography make the brand feel trustworthy, scalable, and engineered, not just "designed." It feels less like a flashy startup and more like a core piece of infrastructure.
-                        </p>
-                    </div>
-
-                </div>
-            </div>
         </main>
     </div>
+    
+    <button id="submit-changes-button" class="fixed bottom-6 right-6 z-50 hidden items-center justify-center px-5 py-3 bg-indigo-600 text-white font-medium rounded-full shadow-lg transition-all duration-300 ease-in-out hover:bg-indigo-700 transform hover:scale-105">
+        Submit <span id="changes-counter" class="ml-2 flex items-center justify-center bg-white text-indigo-600 font-bold rounded-full w-6 h-6 text-sm">0</span> Changes
+    </button>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -347,10 +481,6 @@
                             content.classList.remove('tab-content-active');
                         }
                     });
-
-                    if (tabName === 'kpis' && !kpiChart) {
-                        renderKpiChart();
-                    }
                 });
             });
 
@@ -411,104 +541,218 @@
                     
                     optPlaceholder.style.display = 'none';
                     optDetails.style.display = 'block';
+
+                    makeDynamicContentEditable();
                 });
             });
 
-            let kpiChart = null;
-            function renderKpiChart() {
-                if (kpiChart) {
-                    return; 
-                }
-                const ctx = document.getElementById('kpiFunnelChart').getContext('2d');
-                
-                const labels = [
-                    'Business Goal: Increase ARR', 
-                    'Sales Goal: More Pipeline', 
-                    'Website Goal: Increase MQLs', 
-                    'Website Traffic'
-                ];
-                const data = [10, 40, 70, 100];
+            let changedElements = new Set();
+            const submitButton = document.getElementById('submit-changes-button');
+            const changesCounter = document.getElementById('changes-counter');
+            let baseSubmitText = submitButton.innerHTML;
 
-                kpiChart = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Relative Scale of Funnel',
-                            data: data,
-                            backgroundColor: [
-                                'rgba(67, 56, 202, 0.7)',  /* Indigo 700 */
-                                'rgba(79, 70, 229, 0.7)',  /* Indigo 600 */
-                                'rgba(99, 102, 241, 0.7)', /* Indigo 500 */
-                                'rgba(156, 163, 175, 0.7)' /* Gray 400 */
-                            ],
-                            borderColor: [
-                                'rgba(67, 56, 202, 1)',
-                                'rgba(79, 70, 229, 1)',
-                                'rgba(99, 102, 241, 1)',
-                                'rgba(156, 163, 175, 1)'
-                            ],
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        indexAxis: 'y',
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            x: {
-                                beginAtZero: true,
-                                ticks: {
-                                    display: false
-                                },
-                                grid: {
-                                    display: false,
-                                    drawBorder: false
-                                }
-                            },
-                            y: {
-                                grid: {
-                                    display: false,
-                                    drawBorder: false
-                                },
-                                ticks: {
-                                    font: {
-                                        size: 14,
-                                        weight: 500
-                                    },
-                                    color: '#1F2937', /* Gray 800 */
-                                    autoSkip: false,
-                                    maxRotation: 0,
-                                    minRotation: 0,
-                                    callback: function(value) {
-                                        const label = this.getLabelForValue(value);
-                                        if (label.length > 25) {
-                                            return label.substring(0, 25) + '...';
-                                        }
-                                        return label;
-                                    }
-                                }
-                            }
-                        },
-                        plugins: {
-                            legend: {
-                                display: false
-                            },
-                            tooltip: {
-                                enabled: true,
-                                intersect: false,
-                                mode: 'index',
-                                callbacks: {
-                                    label: function(context) {
-                                        return ` Relative Value: ${context.raw}`;
-                                    }
-                                }
-                            }
-                        }
+            function registerChange(element) {
+                changedElements.add(element);
+                updateSubmitButton();
+            }
+
+            const editableSelectors = [
+                'p#overview-intro',
+                'p#kpis-intro',
+                'p#optimization-intro',
+                '#overview .card p',
+                '#kpis .card li',
+                '#kpis .card strong',
+                '#kpis table tbody td',
+                '#brand .card p',
+                '#optimization-placeholder p'
+            ];
+
+            function makeElementsEditable(selector) {
+                document.querySelectorAll(selector).forEach(el => {
+                    if (el.tagName !== 'CANVAS' && !el.querySelector('canvas') && !el.classList.contains('kpi-remove-row')) {
+                        el.setAttribute('contenteditable', 'true');
+                        el.setAttribute('title', 'Click to edit');
+                        el.style.cursor = 'text';
                     }
                 });
             }
+
+            function makeDynamicContentEditable() {
+                const dynamicSelectors = [
+                    '#opt-elements',
+                    '#opt-kpi',
+                    '#opt-hypothesis',
+                    '#opt-impact'
+                ];
+                makeElementsEditable(dynamicSelectors.join(', '));
+            }
+            
+            makeElementsEditable(editableSelectors.join(', '));
+            
+            document.body.addEventListener('input', function(e) {
+                if (e.target.isContentEditable) {
+                    registerChange(e.target);
+                }
+            });
+
+            function updateSubmitButton() {
+                const count = changedElements.size;
+                if (count > 0) {
+                    changesCounter.textContent = count;
+                    submitButton.classList.remove('hidden');
+                    submitButton.classList.add('flex');
+                } else {
+                    submitButton.classList.add('hidden');
+                    submitButton.classList.remove('flex');
+                    changesCounter.textContent = '0';
+                }
+            }
+
+            submitButton.addEventListener('click', function() {
+                console.log(`Submitting ${changedElements.size} changes:`);
+                let changesData = [];
+                changedElements.forEach(el => {
+                    let identifier = el.id || el.className || el.tagName;
+                    let content = '...';
+                    if (el.id === 'funnel-list') {
+                        content = Array.from(el.querySelectorAll('li')).map(li => li.querySelector('span:last-child').textContent.trim()).join(', ');
+                        identifier = 'funnel-list-order';
+                    } else if (el.dataset.tag) {
+                        content = el.dataset.tag;
+                        identifier = 'tag-item';
+                    } else {
+                        content = el.innerHTML;
+                    }
+
+                    console.log(`Element: ${identifier}`, 'New content:', content);
+                    changesData.push({
+                        element: identifier,
+                        content: content
+                    });
+                });
+
+                const originalText = baseSubmitText;
+                submitButton.innerHTML = 'Submitting...';
+                submitButton.disabled = true;
+
+                setTimeout(() => {
+                    console.log('Submission complete.', changesData);
+                    submitButton.innerHTML = 'Submitted! ✔';
+                    
+                    setTimeout(() => {
+                        changedElements.clear();
+                        updateSubmitButton();
+                        submitButton.innerHTML = originalText;
+                        submitButton.disabled = false;
+                        document.getElementById('changes-counter').textContent = '0';
+                    }, 1500);
+
+                }, 1000);
+            });
+
+            const tagContainer = document.getElementById('tag-container');
+            const tagInput = document.getElementById('tag-input');
+
+            tagInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && tagInput.value.trim() !== '') {
+                    e.preventDefault();
+                    const tagText = tagInput.value.trim();
+                    const newTag = document.createElement('span');
+                    newTag.className = 'tag';
+                    newTag.dataset.tag = tagText;
+                    newTag.innerHTML = `${tagText}<span class="tag-remove">&times;</span>`;
+                    tagContainer.appendChild(newTag);
+                    tagInput.value = '';
+                    registerChange(newTag);
+                }
+            });
+
+            tagContainer.addEventListener('click', function(e) {
+                if (e.target.classList.contains('tag-remove')) {
+                    const tagElement = e.target.parentElement;
+                    registerChange(tagElement);
+                    tagElement.remove();
+                }
+            });
+
+            const funnelList = document.getElementById('funnel-list');
+            let draggingItem = null;
+
+            funnelList.querySelectorAll('.draggable-item').forEach(item => {
+                item.addEventListener('dragstart', (e) => {
+                    draggingItem = e.target.closest('.draggable-item');
+                    setTimeout(() => {
+                        if (draggingItem) {
+                            draggingItem.classList.add('dragging');
+                        }
+                    }, 0);
+                    registerChange(funnelList);
+                });
+
+                item.addEventListener('dragend', () => {
+                    if (draggingItem) {
+                        draggingItem.classList.remove('dragging');
+                        draggingItem = null;
+                    }
+                });
+            });
+
+            funnelList.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                if (!draggingItem) return;
+
+                const afterElement = getDragAfterElement(funnelList, e.clientY);
+                if (afterElement == null) {
+                    funnelList.appendChild(draggingItem);
+                } else {
+                    funnelList.insertBefore(draggingItem, afterElement);
+                }
+            });
+
+            function getDragAfterElement(container, y) {
+                const draggableElements = [...container.querySelectorAll('.draggable-item:not(.dragging)')];
+                return draggableElements.reduce((closest, child) => {
+                    const box = child.getBoundingClientRect();
+                    const offset = y - box.top - box.height / 2;
+                    if (offset < 0 && offset > closest.offset) {
+                        return { offset: offset, element: child };
+                    } else {
+                        return closest;
+                    }
+                }, { offset: Number.NEGATIVE_INFINITY }).element;
+            }
+
+            const kpiTable = document.getElementById('kpi-table');
+            const kpiTableBody = kpiTable.querySelector('tbody');
+            const kpiAddRowButton = document.getElementById('kpi-add-row');
+
+            kpiAddRowButton.addEventListener('click', () => {
+                const newRow = kpiTableBody.insertRow();
+                newRow.className = 'align-top';
+                newRow.innerHTML = `
+                    <td class="py-3 pr-3 font-medium text-gray-800" contenteditable="true">New Category</td>
+                    <td class="py-3 pr-3 text-gray-700" contenteditable="true">New KPI</td>
+                    <td class="py-3 pr-3 text-gray-700" contenteditable="true">New Description</td>
+                    <td class="py-3 pr-3 text-center"><button class="kpi-remove-row text-red-500 hover:text-red-700 text-xl font-bold">&times;</button></td>
+                `;
+                newRow.querySelectorAll('td[contenteditable="true"]').forEach(td => {
+                    td.style.cursor = 'text';
+                    registerChange(td);
+                });
+                registerChange(newRow);
+            });
+
+            kpiTableBody.addEventListener('click', (e) => {
+                if (e.target.classList.contains('kpi-remove-row')) {
+                    const row = e.target.closest('tr');
+                    registerChange(row);
+                    row.remove();
+                }
+            });
+            
+            makeElementsEditable('#kpis table tbody td');
+
         });
-    </script>
-</body>
+    </script></body>
 </html>
